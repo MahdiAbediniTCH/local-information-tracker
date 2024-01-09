@@ -13,7 +13,7 @@ const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 
 int (*CMD_FUNCTIONS[N_COMMANDS])(int, char*[]) = {
 exec_config,
-
+exec_init
 }; // Array of function pointers, indexes are ... to the indexes of strings in COMMANDS
 
 // Main command handler function
@@ -29,6 +29,6 @@ int main(int argc, char *argv[])
         return 1;
     }
     int call_result;
-    call_result = (*CMD_FUNCTIONS[command_ind])(argc, argv);
+    call_result = (CMD_FUNCTIONS[command_ind])(argc, argv);
     return 0;
 }
