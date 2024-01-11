@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
     }
     int command_ind = search_str(COMMANDS, argv[1], N_COMMANDS);
     if (command_ind == -1) {
+        // check if it's an alias
         // command not found error
         return 1;
     }
