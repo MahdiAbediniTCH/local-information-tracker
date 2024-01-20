@@ -16,7 +16,7 @@ int exec_config(int argc, char *argv[])
     int global = 0;
     int arg_ind = 2;
     if (argc < 4) {
-        printf(FEW_ARGUMENTS);
+        fprintf(stderr, FEW_ARGUMENTS);
         return 1;//code
     }
     if (argv[arg_ind] == GLOBAL_OPTION) {
@@ -24,7 +24,7 @@ int exec_config(int argc, char *argv[])
         arg_ind++;
     }
     if (!is_repo() && !global) {
-        printf(NO_REPO);
+        fprintf(stderr, NO_REPO);
         return 1;//code
     }
 

@@ -7,7 +7,8 @@
 #include <limits.h>
 #include <stdlib.h>
 
-#define LITDIR_NAME ".lit"
+#define PATH_MAX 260
+
 int is_file(const char* name)
 {
     struct stat path;
