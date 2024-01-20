@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "utility.h"
 #include "read-data.h"
 
 // Constant strings
@@ -16,15 +17,15 @@ int exec_config(int argc, char *argv[])
     int global = 0;
     int arg_ind = 2;
     if (argc < 4) {
-        fprintf(stderr, FEW_ARGUMENTS);
+        printerr(FEW_ARGUMENTS);
         return 1;//code
     }
     if (argv[arg_ind] == GLOBAL_OPTION) {
         global = 1;
         arg_ind++;
     }
-    if (!is_repo() && !global) {
-        fprintf(stderr, NO_REPO);
+    if (!is_in_repo() && !global) {
+        printerr(NO_REPO);
         return 1;//code
     }
 

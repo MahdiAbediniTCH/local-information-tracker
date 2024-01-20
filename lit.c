@@ -1,7 +1,6 @@
 // Include standard libraries
 
 // Include headers
-#include "utility.h"
 #include "exec-cmd.h"
 
 // Definitions and constants
@@ -31,5 +30,5 @@ int main(int argc, char *argv[])
     }
     int call_result;
     call_result = (CMD_FUNCTIONS[command_ind])(argc, argv);
-    return 0;
+    return call_result;
 }

@@ -25,5 +25,5 @@ char* find_repo_data()
 
 int is_in_repo()
 {
-    return find_repo_data() != NULL;
+    return (find_repo_data() != NULL);
 }
