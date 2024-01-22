@@ -3,6 +3,8 @@
 #include "file-util.h"
 
 #define LITDIR_NAME ".lit"
+#define CONFIG_PATH "C:\\Users\\Asus\\Desktop\\CE\\Mabani\\Project"
+#define CONFIG_MAX 200
 
 char* find_repo_data()
 {
@@ -26,4 +28,47 @@ char* find_repo_data()
 int is_in_repo()
 {
     return (find_repo_data() != NULL);
+}
+
+char* get_config_path(int is_global)  // Note that it does not use is_in_repo
+{
+    char* confpath;
+    if (is_global) {
+        confpath = (char*) malloc(PATH_MAX * sizeof(char));
+        strcpy(confpath, CONFIG_PATH);
+    } else {
+        confpath = find_repo_data();
+    }
+    strcat(confpath, "\\config");
+    return confpath;
+}
+
+int config_user(char* setting, char* data, int is_global) // Configures user.name / note that it assumes that all files already exist with data in them
+{
+    if ( ! (strcmp(setting, "name") == 0 || strcmp(setting, "email") == 0) ) return 1; // Error code
+
+    char* filename = get_config_path(is_global);
+    strcat(filename, "\\user");
+    FILE* f_user = fopen(filename, "r");
+    // Keeping the other one
+    char *email = (char*) malloc(CONFIG_MAX * sizeof(char));
+    char *name = (char*) malloc(CONFIG_MAX * sizeof(char));
+    fgets(name, CONFIG_MAX, f_user);
+    fgets(email, CONFIG_MAX, f_user);
+    name[strcspn(name, "\n")] = '\0'; // fgets will include line break at the end of the string
+    email[strcspn(email, "\n")] = '\0';
+    fclose(f_user);
+
+    // Settling what to keep
+    f_user = fopen(filename, "w");
+    if (strcmp(setting, "name") == 0) {
+        name = data;
+    } else if (strcmp(setting, "email") == 0) {
+        email = data;
+    }
+
+    // Writing
+    fprintf(f_user, "%s\n%s\n", name, email);
+    fclose(f_user);
+    return 0;
 }
