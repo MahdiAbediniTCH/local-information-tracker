@@ -45,7 +45,7 @@ int config_user(char* setting, char* data, int is_global) // Configures user.nam
     if ( ! (strcmp(setting, "name") == 0 || strcmp(setting, "email") == 0) ) return 1; // Error code
 
     char* filename = get_config_path(is_global);
-    strcat(filename, "\\user");
+    strcat(filename, "\\user.txt");
     FILE* f_user = fopen(filename, "r");
     // Keeping the other one
     char *email = (char*) malloc(CONFIG_MAX * sizeof(char));
@@ -82,10 +82,55 @@ int config_alias(char* alias, char* command, int is_global)
     if (token == NULL || search_str(COMMANDS, token, N_COMMANDS) == -1) return 1; // Checking the validity of command
     // Opening config
     char* filename = get_config_path(is_global);
-    strcat(filename, "\\alias");
+    strcat(filename, "\\alias.txt");
     FILE* f_alias = fopen(filename, "a");
     // Writing
-    fprintf(f_alias, "%s%s\n", alias, strchr(command, ' '));
+    fprintf(f_alias, "%s %s\n", alias, command);
     fclose(f_alias);
     return 0;
+}
+
+char* get_alias(char* alias)
+{
+    if (is_in_repo()) {
+        char* filename = get_config_path(0);
+        strcat(filename, "\\alias.txt");
+        FILE* f_alias_repo = fopen(filename, "r");
+        // Getting lines in reverse order
+        char lines[MAX_ALIASES][2][COMMAND_MAX]; // lines[n][0]: alias name // lines[n][1]: command
+        int n_lines = 0;
+        while ( fscanf(f_alias_repo, "%s ", lines[n_lines][0]) != EOF ) { // Getting the alias name
+            fgets(lines[n_lines][1], COMMAND_MAX, f_alias_repo); // Getting the command
+            lines[n_lines][1][strcspn(lines[n_lines][1], "\n")] = '\0'; // Removing the trailing line break
+            n_lines++;
+        }
+        fclose(f_alias_repo);
+        for (int i = n_lines - 1; i >= 0; i--) {
+            if ( strcmp(lines[i][0], alias) == 0 ) {
+                char* output = (char*) malloc(strlen(lines[i][1]) * sizeof(char));
+                strcpy(output, lines[i][1]);
+                return output;
+            }
+        }
+    }
+    char* filename = get_config_path(1);
+    strcat(filename, "\\alias.txt");
+    FILE* f_alias_global = fopen(filename, "r");
+    // Getting lines in reverse order
+    char lines[MAX_ALIASES][2][COMMAND_MAX]; // lines[n][0]: alias name // lines[n][1]: command
+    int n_lines = 0;
+    while ( fscanf(f_alias_global, "%s ", lines[n_lines][0]) != EOF ) { // Getting the alias name
+        fgets(lines[n_lines][1], COMMAND_MAX, f_alias_global); // Getting the command
+        lines[n_lines][1][strcspn(lines[n_lines][1], "\n")] = '\0'; // Removing the trailing line break
+        n_lines++;
+    }
+    fclose(f_alias_global);
+    for (int i = n_lines - 1; i >= 0; i--) {
+        if ( strcmp(lines[i][0], alias) == 0 ) {
+            char* output = (char*) malloc(strlen(lines[i][1]) * sizeof(char));
+            strcpy(output, lines[i][1]);
+            return output;
+        }
+    }
+    return NULL;
 }

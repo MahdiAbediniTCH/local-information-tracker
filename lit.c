@@ -17,9 +17,13 @@ int main(int argc, char *argv[])
     }
     int command_ind = search_str(COMMANDS, argv[1], N_COMMANDS);
     if (command_ind == -1) {
-        // check if it's an alias
-        // usage
-        return 1;
+        char* alias_command = get_alias(argv[1]);
+        if (alias_command == NULL) {
+            // usage
+            return 1;
+        }
+        printf(alias_command);
+        // system(alias_command); //??
     }
     int call_result;
     call_result = (CMD_FUNCTIONS[command_ind])(argc, argv);

@@ -6,6 +6,9 @@ const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "init", 
 };
 
+// Alias
+#define MAX_ALIASES 40
+
 // Command handling related strings
 const char 
 // options
