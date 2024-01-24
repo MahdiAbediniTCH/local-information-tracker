@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "utility.h"
 #include "data.h"
 
 int exec_config(int argc, char *argv[])

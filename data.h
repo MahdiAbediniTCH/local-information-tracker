@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <limits.h>
+#include "utility.h"
 #include "file-util.h"
 
 char* find_repo_data()
@@ -71,5 +72,20 @@ int config_user(char* setting, char* data, int is_global) // Configures user.nam
 
 int config_alias(char* alias, char* command, int is_global)
 {
-    
+    if (strlen(alias) < 1) return 1; // Validation of alias
+
+    char command_copy[COMMAND_MAX];
+    strcpy(command_copy, command);
+    char* token = strtok(command_copy, " ");
+    if (strcmp(token, "lit") != 0) return 1;
+    token = strtok(NULL, " ");
+    if (token == NULL || search_str(COMMANDS, token, N_COMMANDS) == -1) return 1; // Checking the validity of command
+    // Opening config
+    char* filename = get_config_path(is_global);
+    strcat(filename, "\\alias");
+    FILE* f_alias = fopen(filename, "a");
+    // Writing
+    fprintf(f_alias, "%s%s\n", alias, strchr(command, ' '));
+    fclose(f_alias);
+    return 0;
 }
