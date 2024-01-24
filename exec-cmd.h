@@ -17,7 +17,9 @@ int exec_config(int argc, char *argv[])
         printerr(NO_REPO);
         return 1;//code
     }
-
+    // Create initial config files
+    create_config_global();
+    
     if ( strncmp(argv[arg_ind], "user.", 5) == 0 ) {
         if (argc == 4 + opt_global) {
             if ( config_user(argv[arg_ind] + 5, argv[arg_ind + 1], opt_global) == 1 ) {

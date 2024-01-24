@@ -40,6 +40,23 @@ char* get_config_path(int is_global)  // Note that it does not use is_in_repo
     return confpath;
 }
 
+int create_config_global()
+{
+    char* folder_path = get_config_path(1);
+    if ( !file_exists(folder_path, 1) ) {
+        mkdir(folder_path);
+        char original_path[PATH_MAX];
+        getcwd(original_path, sizeof(original_path)); // Keep current path
+        chdir(folder_path);
+        fclose(fopen("alias.txt", "w")); // Create empty alias file
+        FILE* f_user = fopen("user.txt", "w");
+        fprintf(f_user, "Default\ndefault@user.info\n");
+        fclose(f_user);
+        return 0;
+    }
+    return 1;
+}
+
 int config_user(char* setting, char* data, int is_global) // Configures user.name / note that it assumes that all files already exist with data in them
 {
     if ( ! (strcmp(setting, "name") == 0 || strcmp(setting, "email") == 0) ) return 1; // Error code
