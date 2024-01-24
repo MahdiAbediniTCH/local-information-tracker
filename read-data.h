@@ -72,3 +72,8 @@ int config_user(char* setting, char* data, int is_global) // Configures user.nam
     fclose(f_user);
     return 0;
 }
+
+int config_alias(char* alias, char* command, int is_global)
+{
+    return 0;
+}

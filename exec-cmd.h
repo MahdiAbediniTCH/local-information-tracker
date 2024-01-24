@@ -10,7 +10,8 @@ GLOBAL_OPTION[] = "-global",
 FEW_ARGUMENTS[] = "Too few arguments\n",
 NO_REPO[] = "Not a repository\n",
 INVALID_CONFIG[] = "Invalid configuration\n",
-INVALID_USAGE[] = "Invalid usage"
+INVALID_USAGE[] = "Invalid usage\n",
+INVALID_COMMAND_FOR_ALIAS[] = "Invalid command used for alias\n"
 ;
 // Constants end
 
@@ -42,7 +43,10 @@ int exec_config(int argc, char *argv[])
             return 1;//code
         }
     } else if ( strncmp(argv[arg_ind], "alias.", 6) == 0 ) {
-        
+        if ( config_alias(argv[arg_ind] + 6, argv[arg_ind + 1], opt_global) == 1 ){
+            printerr(INVALID_COMMAND_FOR_ALIAS);
+            return 1;
+        } // done
     } else {
         printerr(INVALID_CONFIG);
         return 1;
