@@ -19,7 +19,7 @@ int exec_config(int argc, char *argv[])
     }
     // Create initial config files
     create_config_global();
-    
+
     if ( strncmp(argv[arg_ind], "user.", 5) == 0 ) {
         if (argc == 4 + opt_global) {
             if ( config_user(argv[arg_ind] + 5, argv[arg_ind + 1], opt_global) == 1 ) {
@@ -43,5 +43,14 @@ int exec_config(int argc, char *argv[])
 }
 int exec_init(int argc, char *argv[])
 {
-    printf("init \n");
+    if (argc != 2) {
+        printerr(INVALID_USAGE);
+        return 1;
+    }
+    if ( is_in_repo() ) {
+        printerr(ALREADY_IN_REPOSITORY);
+        return 1;
+    }
+    initialize_repo();
+    printf(REPO_INIT_MESSAGE, find_repo_data()); // Message
 }

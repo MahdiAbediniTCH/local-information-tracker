@@ -6,20 +6,20 @@
 int (*CMD_FUNCTIONS[N_COMMANDS])(int, char*[]) = {
 exec_config,
 exec_init
-}; // Array of function pointers, indexes are ... to the indexes of strings in COMMANDS
+}; // Array of function pointers, indexes are respective to the indexes of strings in COMMANDS
 
 // Main command handler function
 int main(int argc, char *argv[])
 {
     if (argc == 1) {
-        // usage message
+        printf(USAGE);
         return 1;
     }
     int command_ind = search_str(COMMANDS, argv[1], N_COMMANDS);
     if (command_ind == -1) {
         char* alias_command = get_alias(argv[1]);
         if (alias_command == NULL) {
-            // usage
+            printf(USAGE);
             return 1;
         }
         // Append extra arguments to the command

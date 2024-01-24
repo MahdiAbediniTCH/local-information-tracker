@@ -13,12 +13,12 @@ char* find_repo_data()
             char* result = (char*) malloc(PATH_MAX * sizeof(char));
             getcwd(result, PATH_MAX);
             strcat(result, "\\"); strcat(result, LITDIR_NAME);
-            chdir(original_path);
             return result;
         }
         if ( is_root() ) break;
         chdir("..");
     }
+    chdir(original_path);
     return NULL;
 }
 
@@ -52,6 +52,7 @@ int create_config_global()
         FILE* f_user = fopen("user.txt", "w");
         fprintf(f_user, "Default\ndefault@user.info\n");
         fclose(f_user);
+        chdir(original_path);
         return 0;
     }
     return 1;
@@ -150,4 +151,21 @@ char* get_alias(char* alias)
         }
     }
     return NULL;
+}
+
+int initialize_repo() // * This function should be further developed in respect to other features that are yet to be added
+{
+    mkdir(LITDIR_NAME);
+    system("attrib +h .lit");
+    // char original_path[PATH_MAX];
+    // getcwd(original_path, sizeof(original_path));
+    chdir(LITDIR_NAME);
+    mkdir("config");
+    chdir("config");
+    fclose(fopen("alias.txt", "w")); // Create empty alias file
+    FILE* f_user = fopen("user.txt", "w");
+    fprintf(f_user, "Default\ndefault@user.info\n");
+    fclose(f_user);
+    chdir("..\.."); // Go back to the original path
+    return 0;
 }
