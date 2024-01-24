@@ -4,23 +4,24 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "constants.h"
 
-int is_file(const char* name)
+bool is_file(const char* name)
 {
     struct stat path;
     stat(name, &path);
     return S_ISREG(path.st_mode);
 }
 
-int is_root()
+bool is_root()
 {
     char path[PATH_MAX];
     getcwd(path, sizeof(path));
     return strlen(path) < 4; // In windows, all drive names are 1 letter long (e.g. f:/)
 }
 
-int file_exists(char name[], int is_dir)
+bool file_exists(char name[], int is_dir)
 {
     if (!is_dir)
         return is_file(name); // This will be enough if it's a file

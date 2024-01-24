@@ -41,6 +41,7 @@ int exec_config(int argc, char *argv[])
     }
     return 0;
 }
+
 int exec_init(int argc, char *argv[])
 {
     if (argc != 2) {
@@ -53,4 +54,37 @@ int exec_init(int argc, char *argv[])
     }
     initialize_repo();
     printf(REPO_INIT_MESSAGE, find_repo_data()); // Message
+}
+
+int exec_add(int argc, char *argv[])
+{
+    if ( !is_in_repo() ) {
+        printerr(NOT_REPO);
+        return 1;
+    }
+    if (argc < 3) {
+        printerr(FEW_ARGUMENTS);
+        return 1;
+    }
+    int arg_ind = 2;
+    if (argv[arg_ind][0] == '-') {
+        if ( strcmp(argv[arg_ind] + 1, "n") == 0 ) {
+            if (argc != 4) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            arg_ind++;
+            // SHOW FILES AND DIRECTORIES 
+        } else if ( strcmp(argv[arg_ind] + 1, "f") == 0 ) {
+            arg_ind++;
+        // TODO: add -redo option
+        } else {
+            printerr(INVALID_OPTION);
+            return 1;
+        }
+    }
+    for (int i = arg_ind; i < argc; i++) {
+        // stage_file(argv[i]);
+    }
+    
 }

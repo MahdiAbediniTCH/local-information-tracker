@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <limits.h>
+#include <stdbool.h>
 #include "utility.h"
 #include "file-util.h"
 
@@ -22,7 +23,7 @@ char* find_repo_data()
     return NULL;
 }
 
-int is_in_repo()
+bool is_in_repo()
 {
     return (find_repo_data() != NULL);
 }
@@ -166,6 +167,6 @@ int initialize_repo() // * This function should be further developed in respect 
     FILE* f_user = fopen("user.txt", "w");
     fprintf(f_user, "Default\ndefault@user.info\n");
     fclose(f_user);
-    chdir("..\.."); // Go back to the original path
+    chdir("..\\.."); // Go back to the original path
     return 0;
 }

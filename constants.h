@@ -1,9 +1,11 @@
 // Allowed commands
-#define N_COMMANDS 2 // Number of allowed commands
+#define N_COMMANDS 3 // Number of allowed commands
 #define COMMAND_MAX 100 // Maximum length of a command
 const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "config", 
 "init", 
+"add",
+
 };
 
 // Alias
@@ -18,10 +20,12 @@ FEW_ARGUMENTS[] = "Too few arguments\n",
 NO_REPO[] = "Not a repository\n",
 INVALID_CONFIG[] = "Invalid configuration\n",
 INVALID_USAGE[] = "Invalid usage\n",
+INVALID_OPTION[] = "Invalid option\n",
 INVALID_COMMAND_FOR_ALIAS[] = "Invalid command used for alias\n",
 ALREADY_IN_REPOSITORY[] = "There is already a repository in current directory or parent directories\n",
+NOT_REPO[] = "Not a lit repository\n",
 // messages
-REPO_INIT_MESSAGE[] = "Initialized empty Git repository in %s\n";
+REPO_INIT_MESSAGE[] = "Initialized empty Git repository in %s\n"
 ;
 
 // Paths
