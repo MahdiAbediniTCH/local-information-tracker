@@ -3,13 +3,6 @@
 // Include headers
 #include "exec-cmd.h"
 
-// Definitions and constants
-#define N_COMMANDS 2 // Number of allowed commands
-const char* COMMANDS[N_COMMANDS] = { // Array of command strings
-"config", 
-"init", 
-};
-
 int (*CMD_FUNCTIONS[N_COMMANDS])(int, char*[]) = {
 exec_config,
 exec_init

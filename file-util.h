@@ -6,8 +6,7 @@
 #include <string.h>
 #include <limits.h>
 #include <stdlib.h>
-
-#define PATH_MAX 260
+#include "constants.h"
 
 int is_file(const char* name)
 {

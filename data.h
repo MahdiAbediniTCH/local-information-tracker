@@ -2,10 +2,6 @@
 #include <limits.h>
 #include "file-util.h"
 
-#define LITDIR_NAME ".lit"
-#define CONFIG_PATH "C:\\Users\\Asus\\Desktop\\CE\\Mabani\\Project"
-#define CONFIG_MAX 200
-
 char* find_repo_data()
 {
     // search in current dir and parents
@@ -75,5 +71,5 @@ int config_user(char* setting, char* data, int is_global) // Configures user.nam
 
 int config_alias(char* alias, char* command, int is_global)
 {
-    return 0;
+    
 }

@@ -1,5 +1,5 @@
 
-#include "read-data.h"
+#include "data.h"
 
 int main() {
     char* path = find_repo_data();

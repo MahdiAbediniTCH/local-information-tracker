@@ -1,19 +1,6 @@
 #include <stdio.h>
 #include "utility.h"
-#include "read-data.h"
-
-// Constant strings
-const char 
-// options
-GLOBAL_OPTION[] = "-global", 
-// errors
-FEW_ARGUMENTS[] = "Too few arguments\n",
-NO_REPO[] = "Not a repository\n",
-INVALID_CONFIG[] = "Invalid configuration\n",
-INVALID_USAGE[] = "Invalid usage\n",
-INVALID_COMMAND_FOR_ALIAS[] = "Invalid command used for alias\n"
-;
-// Constants end
+#include "data.h"
 
 int exec_config(int argc, char *argv[])
 {
