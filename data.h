@@ -107,7 +107,7 @@ char* get_alias(char* alias)
         fclose(f_alias_repo);
         for (int i = n_lines - 1; i >= 0; i--) {
             if ( strcmp(lines[i][0], alias) == 0 ) {
-                char* output = (char*) malloc(strlen(lines[i][1]) * sizeof(char));
+                char* output = (char*) malloc(COMMAND_MAX * sizeof(char));
                 strcpy(output, lines[i][1]);
                 return output;
             }
@@ -127,7 +127,7 @@ char* get_alias(char* alias)
     fclose(f_alias_global);
     for (int i = n_lines - 1; i >= 0; i--) {
         if ( strcmp(lines[i][0], alias) == 0 ) {
-            char* output = (char*) malloc(strlen(lines[i][1]) * sizeof(char));
+            char* output = (char*) malloc(COMMAND_MAX * sizeof(char));
             strcpy(output, lines[i][1]);
             return output;
         }

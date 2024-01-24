@@ -22,8 +22,18 @@ int main(int argc, char *argv[])
             // usage
             return 1;
         }
-        printf(alias_command);
-        // system(alias_command); //??
+        // Append extra arguments to the command
+        for (int i = 2; i < argc; i++) {
+            strcat(alias_command, " ");
+            if ( strchr(argv[i], ' ') != NULL ) {
+                strcat(alias_command, "\"");
+                strcat(alias_command, argv[i]);
+                strcat(alias_command, "\"");
+            } else {
+                strcat(alias_command, argv[i]);
+            }
+        }
+        system(alias_command);
     }
     int call_result;
     call_result = (CMD_FUNCTIONS[command_ind])(argc, argv);

@@ -1,6 +1,6 @@
 // Allowed commands
 #define N_COMMANDS 2 // Number of allowed commands
-#define COMMAND_MAX 60 // Maximum length of a command
+#define COMMAND_MAX 100 // Maximum length of a command
 const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "config", 
 "init", 
