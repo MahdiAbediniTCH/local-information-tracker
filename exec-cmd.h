@@ -54,6 +54,7 @@ int exec_init(int argc, char *argv[])
     }
     initialize_repo();
     printf(REPO_INIT_MESSAGE, find_repo_data()); // Message
+    return 0;
 }
 
 int exec_add(int argc, char *argv[])
@@ -74,7 +75,7 @@ int exec_add(int argc, char *argv[])
                 return 1;
             }
             arg_ind++;
-            // SHOW FILES AND DIRECTORIES 
+            // TODO: SHOW FILES AND DIRECTORIES 
         } else if ( strcmp(argv[arg_ind] + 1, "f") == 0 ) {
             arg_ind++;
         // TODO: add -redo option
@@ -83,8 +84,18 @@ int exec_add(int argc, char *argv[])
             return 1;
         }
     }
+    bool did_stage = false;
     for (int i = arg_ind; i < argc; i++) {
-        // stage_file(argv[i]);
+        int return_status = stage_file(argv[i]);
+        if (!return_status) {
+            did_stage = true;
+        } else if (return_status == 1) {
+            printf(FILEN_NOT_FOUND, argv[i]);
+        }
     }
-    
+    if (did_stage) {
+        printf(STAGE_SUCCESS);
+        return 0;
+    }
+    return 1;
 }

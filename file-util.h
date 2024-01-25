@@ -1,3 +1,6 @@
+#ifndef FILEUTIL_H // Include guard
+#define FILEUTIL_H
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -21,7 +24,17 @@ bool is_root()
     return strlen(path) < 4; // In windows, all drive names are 1 letter long (e.g. f:/)
 }
 
-bool file_exists(char name[], int is_dir)
+bool is_ignored(char* filename)
+{
+    if (strcmp(filename, ".lit") == 0 ||
+        strcmp(filename, "..") == 0 ||
+        strcmp(filename, ".") == 0) {
+            return true;
+        }
+    return false;
+}
+
+bool file_exists(char name[], bool is_dir)
 {
     if (!is_dir)
         return is_file(name); // This will be enough if it's a file
@@ -29,3 +42,5 @@ bool file_exists(char name[], int is_dir)
         return 0;
     return access(name, F_OK) == 0;
 }
+
+#endif // FILEUTIL_H

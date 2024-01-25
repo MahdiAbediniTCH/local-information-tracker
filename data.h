@@ -1,16 +1,23 @@
+#ifndef DATA_H // Include guard
+#define DATA_H
+
 #include <unistd.h>
 #include <limits.h>
 #include <stdbool.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "utility.h"
 #include "file-util.h"
 
+// search in current dir and parents
 char* find_repo_data()
 {
-    // search in current dir and parents
     char original_path[PATH_MAX];
     getcwd(original_path, sizeof(original_path));
     for (;;) {
-        if ( file_exists(LITDIR_NAME, 1) ) {
+        if ( file_exists(LITDIR_NAME, true) ) {
             char* result = (char*) malloc(PATH_MAX * sizeof(char));
             getcwd(result, PATH_MAX);
             strcat(result, "\\"); strcat(result, LITDIR_NAME);
@@ -28,7 +35,8 @@ bool is_in_repo()
     return (find_repo_data() != NULL);
 }
 
-char* get_config_path(int is_global)  // Note that it does not use is_in_repo
+// Note that it does not use is_in_repo
+char* get_config_path(int is_global) 
 {
     char* confpath;
     if (is_global) {
@@ -44,7 +52,7 @@ char* get_config_path(int is_global)  // Note that it does not use is_in_repo
 int create_config_global()
 {
     char* folder_path = get_config_path(1);
-    if ( !file_exists(folder_path, 1) ) {
+    if ( !file_exists(folder_path, true) ) {
         mkdir(folder_path);
         char original_path[PATH_MAX];
         getcwd(original_path, sizeof(original_path)); // Keep current path
@@ -59,7 +67,8 @@ int create_config_global()
     return 1;
 }
 
-int config_user(char* setting, char* data, int is_global) // Configures user.name / note that it assumes that all files already exist with data in them
+// Configures user.name / note that it assumes that all files already exist with data in them
+int config_user(char* setting, char* data, int is_global) 
 {
     if ( ! (strcmp(setting, "name") == 0 || strcmp(setting, "email") == 0) ) return 1; // Error code
 
@@ -154,7 +163,8 @@ char* get_alias(char* alias)
     return NULL;
 }
 
-int initialize_repo() // * This function should be further developed in respect to other features that are yet to be added
+// * This function should be further developed in respect to other features that are yet to be added
+int initialize_repo() 
 {
     mkdir(LITDIR_NAME);
     system("attrib +h .lit");
@@ -170,3 +180,29 @@ int initialize_repo() // * This function should be further developed in respect 
     chdir("..\\.."); // Go back to the original path
     return 0;
 }
+
+// Return codes 0: success, 1: file not found, 2: already staged
+int stage_file(char* filename) 
+{
+    if ( file_exists(filename, true) ) { // Directory
+        DIR* folder = opendir(filename);
+        if (folder == NULL) return 1;
+        struct dirent* entry;
+        // Change working directory to the folder and keeping the original path
+        char original_path[PATH_MAX];
+        getcwd(original_path, sizeof(original_path));
+        chdir(filename);
+        while ( (entry = readdir(folder)) != NULL ) {
+            if ( is_ignored(entry->d_name) ) continue;
+            stage_file(entry->d_name);
+        }
+        chdir(original_path);
+        closedir(folder);
+    } else if ( file_exists(filename, false) ) { // File
+
+    } else {
+        return 1;
+    }
+}
+
+#endif // DATA_H

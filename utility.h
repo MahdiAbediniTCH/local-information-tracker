@@ -1,3 +1,6 @@
+#ifndef UTILITY_H // Include guard
+#define UTILITY_H
+
 #include <string.h>
 #include <stdio.h>
 
@@ -14,3 +17,5 @@ void printerr(const char* error)
     fprintf(stderr, error);
     printf("\033[0m");
 }
+
+#endif // UTILITY_H
