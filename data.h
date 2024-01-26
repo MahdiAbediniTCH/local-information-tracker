@@ -173,10 +173,19 @@ int initialize_repo()
     chdir(LITDIR_NAME);
     mkdir("config");
     chdir("config");
+
     fclose(fopen("alias.txt", "w")); // Create empty alias file
+    // User info file
     FILE* f_user = fopen("user.txt", "w");
     fprintf(f_user, "Default\ndefault@user.info\n");
     fclose(f_user);
+    chdir("..");
+    // States
+    mkdir("states"); chdir("states");
+    mkdir("stage");
+    
+    mkdir("commits");
+    // commits
     chdir("..\\.."); // Go back to the original path
     return 0;
 }
@@ -199,7 +208,7 @@ int stage_file(char* filename)
         chdir(original_path);
         closedir(folder);
     } else if ( file_exists(filename, false) ) { // File
-
+        printf("Added: %s\n", filename);
     } else {
         return 1;
     }

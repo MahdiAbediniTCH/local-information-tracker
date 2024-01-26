@@ -9,6 +9,10 @@ const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "add",
 
 };
+// User info
+#define USERNAME_MAX 30
+#define EMAIL_MAX 40
+
 
 // Alias
 #define MAX_ALIASES 40
@@ -37,6 +41,13 @@ STAGE_SUCCESS[] = "File(s) staged successfully\n"
 #define LITDIR_NAME ".lit"
 #define CONFIG_PATH "C:\\Users\\Asus\\Desktop\\CE\\Mabani\\Project"
 #define CONFIG_MAX 200
+
+// Commits
+#define COMMIT_MESSAGE_MAX 72
+#define MAX_TRACKED_FILES 200
+
+// Branch
+#define BRANCH_NAME_MAX 40
 
 // Usage text
 const char USAGE[] = "usage: lit <command> [<args>]\n";
