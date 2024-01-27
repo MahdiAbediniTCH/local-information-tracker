@@ -12,7 +12,7 @@
 #include "file-util.h"
 
 // search in current dir and parents
-char* find_repo_data()
+char* find_root_path()
 {
     char original_path[PATH_MAX];
     getcwd(original_path, sizeof(original_path));
@@ -20,7 +20,6 @@ char* find_repo_data()
         if ( file_exists(LITDIR_NAME, true) ) {
             char* result = (char*) malloc(PATH_MAX * sizeof(char));
             getcwd(result, PATH_MAX);
-            strcat(result, "\\"); strcat(result, LITDIR_NAME);
             return result;
         }
         if ( is_root() ) break;
@@ -28,6 +27,14 @@ char* find_repo_data()
     }
     chdir(original_path);
     return NULL;
+}
+
+char* find_repo_data()
+{
+    char* result = find_root_path();
+    if (result == NULL) return NULL;
+    strcat(result, "\\"); strcat(result, LITDIR_NAME);
+    return result;
 }
 
 bool is_in_repo()
@@ -209,6 +216,7 @@ int stage_file(char* filename)
         closedir(folder);
     } else if ( file_exists(filename, false) ) { // File
         printf("Added: %s\n", filename);
+        return 0;
     } else {
         return 1;
     }

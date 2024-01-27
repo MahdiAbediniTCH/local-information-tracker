@@ -1,6 +1,7 @@
 // Include standard libraries
 
 // Include headers
+#include "utility.h"
 #include "exec-cmd.h"
 
 int (*CMD_FUNCTIONS[N_COMMANDS])(int, char*[]) = {

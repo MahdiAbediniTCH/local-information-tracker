@@ -37,7 +37,7 @@ STAGE_SUCCESS[] = "File(s) staged successfully\n"
 ;
 
 // Paths
-#define PATH_MAX 260
+#define PATH_MAX 280
 #define LITDIR_NAME ".lit"
 #define CONFIG_PATH "C:\\Users\\Asus\\Desktop\\CE\\Mabani\\Project"
 #define CONFIG_MAX 200
