@@ -10,6 +10,7 @@
 
 #include "utility.h"
 #include "file-util.h"
+#include "struct-state.h"
 
 // search in current dir and parents
 char* find_root_path()
@@ -43,7 +44,7 @@ bool is_in_repo()
 }
 
 // Note that it does not use is_in_repo
-char* get_config_path(int is_global) 
+char* get_config_path(bool is_global) 
 {
     char* confpath;
     if (is_global) {
@@ -83,12 +84,12 @@ int config_user(char* setting, char* data, int is_global)
     strcat(filename, "\\user.txt");
     FILE* f_user = fopen(filename, "r");
     // Keeping the other one
-    char *email = (char*) malloc(CONFIG_MAX * sizeof(char));
-    char *name = (char*) malloc(CONFIG_MAX * sizeof(char));
-    fgets(name, CONFIG_MAX, f_user);
-    fgets(email, CONFIG_MAX, f_user);
-    name[strcspn(name, "\n")] = '\0'; // fgets will include line break at the end of the string
-    email[strcspn(email, "\n")] = '\0';
+    char *email = (char*) malloc(EMAIL_MAX * sizeof(char));
+    char *name = (char*) malloc(USERNAME_MAX * sizeof(char));
+    fgets(name, USERNAME_MAX, f_user);
+    fgets(email, EMAIL_MAX, f_user);
+    name[strcspn(name, "\n\r")] = '\0'; // fgets will include line break at the end of the string
+    email[strcspn(email, "\n\r")] = '\0';
     fclose(f_user);
 
     // Settling what to keep
@@ -102,7 +103,49 @@ int config_user(char* setting, char* data, int is_global)
     // Writing
     fprintf(f_user, "%s\n%s\n", name, email);
     fclose(f_user);
+    free(email); free(name);
     return 0;
+}
+
+int get_author_name(char* name)
+{
+
+    char* filename = get_config_path(false);
+    strcat(filename, "\\user.txt");
+    FILE* f_user = fopen(filename, "r");
+    // Keeping the other one
+    bool undefined_local = false;
+    if ( fgets(name, USERNAME_MAX, f_user) == NULL ) undefined_local = true;
+    if ( undefined_local ) {
+        char* filename_glob = get_config_path(true);
+        strcat(filename_glob, "\\user.txt");
+        FILE* f_user_glob = fopen(filename, "r");
+        fgets(name, USERNAME_MAX, f_user_glob);
+    }
+    name[strcspn(name, "\n\r")] = '\0';
+    fclose(f_user);
+    return undefined_local;
+}
+
+int get_author_email(char* email)
+{
+    char* filename = get_config_path(false);
+    strcat(filename, "\\user.txt");
+    FILE* f_user = fopen(filename, "r");
+    // Keeping the other one
+    bool undefined_local = false;
+    if ( fgets(email, EMAIL_MAX, f_user) == NULL ) undefined_local = true;
+    if ( fgets(email, EMAIL_MAX, f_user) == NULL ) undefined_local = true; // (email is on the second line)
+    if ( undefined_local ) {
+        char* filename_glob = get_config_path(true);
+        strcat(filename_glob, "\\user.txt");
+        FILE* f_user_glob = fopen(filename, "r");
+        fgets(email, EMAIL_MAX, f_user_glob);
+        fgets(email, EMAIL_MAX, f_user_glob);
+    }
+    email[strcspn(email, "\n\r")] = '\0';
+    fclose(f_user);
+    return undefined_local;
 }
 
 int config_alias(char* alias, char* command, int is_global)
@@ -169,7 +212,6 @@ char* get_alias(char* alias)
     }
     return NULL;
 }
-
 // * This function should be further developed in respect to other features that are yet to be added
 int initialize_repo() 
 {
@@ -190,36 +232,12 @@ int initialize_repo()
     // States
     mkdir("states"); chdir("states");
     mkdir("stage");
-    
+
     mkdir("commits");
     // commits
+    create_root_commit();
     chdir("..\\.."); // Go back to the original path
     return 0;
-}
-
-// Return codes 0: success, 1: file not found, 2: already staged
-int stage_file(char* filename) 
-{
-    if ( file_exists(filename, true) ) { // Directory
-        DIR* folder = opendir(filename);
-        if (folder == NULL) return 1;
-        struct dirent* entry;
-        // Change working directory to the folder and keeping the original path
-        char original_path[PATH_MAX];
-        getcwd(original_path, sizeof(original_path));
-        chdir(filename);
-        while ( (entry = readdir(folder)) != NULL ) {
-            if ( is_ignored(entry->d_name) ) continue;
-            stage_file(entry->d_name);
-        }
-        chdir(original_path);
-        closedir(folder);
-    } else if ( file_exists(filename, false) ) { // File
-        printf("Added: %s\n", filename);
-        return 0;
-    } else {
-        return 1;
-    }
 }
 
 #endif // DATA_H

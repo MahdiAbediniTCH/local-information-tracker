@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+
+#include "data.h"
 #include "constants.h"
 
 enum Filestat{
@@ -17,6 +19,7 @@ enum Filestat{
 
 typedef struct State {
     int state_id; // Commit id is incremented with each commit, starts with 0x10
+    int parent_id;
     time_t time_created;
     char message[COMMIT_MESSAGE_MAX + 1];
     char branch_name[BRANCH_NAME_MAX];
@@ -28,10 +31,11 @@ typedef struct State {
     char data_dir[PATH_MAX]; // relative to the root of the repo
 } State;
 
-State* initialize_state(int id, char* message, char* branch, char* name, char* email, char* data_dir) // TODO: decide about the arguments
+State* initialize_state(int id, int parent_id, char* message, char* branch, char* name, char* email, char* data_dir) // TODO: decide about the arguments
 {
     State* state = (State*) malloc(sizeof(State));
     state->state_id = id;
+    state->parent_id = parent_id;
     state->time_created = time(NULL);
     strcpy(state->message, message);
     strcpy(state->branch_name, branch);
@@ -74,7 +78,7 @@ State* read_state(char* path)
         char* sep = strchr(line, '|');
         sep[0] = '\0';
         strcpy(state->tracked_files[state->n_files], line);
-        state->file_stat[state->n_files] = atoi(sep + 1); // WILL IT NOT WORK?
+        state->file_stat[state->n_files] = atoi(sep + 1);
         state->n_files++;
     }
     fclose(tracked_f);
@@ -180,6 +184,38 @@ int add_state_file(State* state, char* filename, enum Filestat file_stat) // Rel
     state->n_files++;
     return 0;
 }
+
+int get_state_data_dir(char* datadir, int id)
+{
+    // Stage
+    if (id == 0x01) {
+        strcpy(datadir, ".lit\\states\\stage");
+        return 1; // meaning stage
+    // Commits
+    } else if (id >= 0x10 || id == 0x00) {
+        sprintf(datadir, ".lit\\states\\commits\\%x", id);
+        return 0;
+    }
+    // TODO: Stash
+}
+
+State* inherit_state(State* parent, int id)
+{
+    State* state = (State*) malloc(sizeof(State));
+    state->state_id = id;
+    state->parent_id = parent->state_id;
+    get_author_name(state->author_name);
+    get_author_email(state->author_email);
+    strcpy(state->branch_name, parent->branch_name);
+    state->n_files = parent->n_files;
+    memcpy(state->tracked_files, parent->tracked_files, sizeof(parent->tracked_files));
+    memcpy(state->file_stat, parent->file_stat, sizeof(parent->file_stat));
+    state->time_created = time(NULL);
+    state->message[0] = '\0';
+    get_state_data_dir(state->data_dir, id);
+    return state;
+}
+
 int add_and_copy_file(State* state, char* filename) // Relative to root
 {
 

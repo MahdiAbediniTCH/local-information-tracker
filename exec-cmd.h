@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "data.h"
+#include "changes.h"
 
 int exec_config(int argc, char *argv[])
 {
