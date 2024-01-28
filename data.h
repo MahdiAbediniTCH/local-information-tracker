@@ -12,6 +12,9 @@
 #include "file-util.h"
 #include "struct-state.h"
 
+// Function prototypes because of bad source management
+int make_initial_empty_stage();
+
 // search in current dir and parents
 char* find_root_path()
 {
@@ -232,10 +235,13 @@ int initialize_repo()
     // States
     mkdir("states"); chdir("states");
     mkdir("stage");
+    chdir("stage");
+    // make_initial_empty_stage();
+    chdir("..");
 
     mkdir("commits");
     // commits
-    create_root_commit();
+    // create_root_commit();
     chdir("..\\.."); // Go back to the original path
     return 0;
 }

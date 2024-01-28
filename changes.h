@@ -14,8 +14,13 @@ int create_root_commit()
 
 }
 
+State* get_stage_object()
+{
+    return read_state(".lit\\states\\stage");
+}
+
 // Return codes 0: success, 1: file not found, 2: already staged
-int stage_file(char* filename) 
+int stage_file(char* filename, State* stage_obj) 
 {
     if ( file_exists(filename, true) ) { // Directory
         DIR* folder = opendir(filename);
@@ -27,12 +32,21 @@ int stage_file(char* filename)
         chdir(filename);
         while ( (entry = readdir(folder)) != NULL ) {
             if ( is_ignored(entry->d_name) ) continue;
-            stage_file(entry->d_name);
+            stage_file(entry->d_name, stage_obj);
         }
         chdir(original_path);
         closedir(folder);
+        return 0;
     } else if ( file_exists(filename, false) ) { // File
-        printf("Added: %s\n", filename); // TODO
+        char* relpath = file_relative_to_root(filename, find_root_path());
+        int f_ind = find_state_file(stage_obj, relpath);
+        if (f_ind > -1) {
+            enum Filestat fstat = stage_obj->file_stat[f_ind];
+            // TODO: AFTER DOING THE COMMITS, DO THE CHANGES WITH DIFFERENT STATS
+            
+        }
+        add_state_file(stage_obj, relpath, S_ADDED);
+        // TOODODODODOD: Instead of updating all you should only update the new file (im gonna kms)
         return 0;
     } else {
         return 1;

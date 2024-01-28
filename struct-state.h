@@ -10,6 +10,12 @@
 #include "data.h"
 #include "constants.h"
 
+// Function prototypes because of bad source management
+char* find_root_path();
+int get_author_name(char*);
+int get_author_email(char*);
+
+
 enum Filestat{
     S_ADDED,
     S_MODIFIED,
@@ -156,6 +162,7 @@ int update_all_state_files(State* state)
         system(system_command);
     }
     chdir(original_path);
+    return 0;
 }
 
 // Returns the index, returns -1 if not found
@@ -197,6 +204,7 @@ int get_state_data_dir(char* datadir, int id)
         return 0;
     }
     // TODO: Stash
+    return -1;
 }
 
 State* inherit_state(State* parent, int id)

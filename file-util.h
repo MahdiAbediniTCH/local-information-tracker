@@ -43,4 +43,23 @@ bool file_exists(char name[], bool is_dir)
     return access(name, F_OK) == 0;
 }
 
+// Returns 1 if relative_to is not a parent directory of path, 0 otherwise
+int relative_path(char* path, const char* relative_to)
+{
+    char* tmp = strstr(relative_to, path);
+    if ( tmp == NULL ) return 1;
+    memmove(path, path + strlen(relative_to), strlen(path) - strlen(relative_to) + 1);
+    return 0;
+}
+
+char* file_relative_to_root(const char* filename_only, const char* relative_to)
+{
+    char* rel_path = (char*) malloc(PATH_MAX * sizeof(char));
+    getcwd(rel_path, PATH_MAX);
+    strcat(rel_path, "\\");
+    strcat(rel_path, filename_only);
+    if ( relative_path(rel_path, relative_to) == 1 ) return NULL;
+    return rel_path;
+}
+
 #endif // FILEUTIL_H

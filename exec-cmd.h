@@ -87,7 +87,10 @@ int exec_add(int argc, char *argv[])
     }
     bool did_stage = false;
     for (int i = arg_ind; i < argc; i++) {
-        int return_status = stage_file(argv[i]);
+        // TODO: Later implement deleting files that were staged before
+        State* state_obj = get_stage_object();
+        int return_status = stage_file(argv[i], state_obj);
+        update_all_state_files(state_obj);
         if (!return_status) {
             did_stage = true;
         } else if (return_status == 1) {
