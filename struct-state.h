@@ -105,7 +105,6 @@ int write_state(State* state, char* path)
     fclose(meta);
     // Writing file info
     FILE* files = fopen("files.txt", "w");
-    // fprintf(files, "%d\n", state->n_files);
     for (int i = 0; i < state->n_files; i++) {
         fprintf(files, "%s|%d\n", state->tracked_files[i], state->file_stat[i]);
     }
@@ -131,22 +130,25 @@ int update_all_state_files(State* state)
             char file_path[PATH_MAX];
             sprintf(file_path, "%s\\root\\%s", state->data_dir, filename);
             if ( remove(file_path) == -1 ) {
-                printf("DBG: THIS FILE NOT FOUND\n");
+                // TEMPCOMMENT: printf("DBG: THIS FILE NOT FOUND\n");
             }
             continue;
         }
         // Temporarily changing the filename to make the folders
-        char* last_sep = strrchr(filename, '\\');
-        *last_sep = '\0';
         char system_command[PATH_MAX];
-        if ( strlen(filename) > 0 ) {
-            sprintf(system_command, "mkdir %s", filename);
-            system(system_command);
+        char* last_sep = strrchr(filename, '\\');
+        if ( last_sep != NULL ) {
+            *last_sep = '\0';
+            if ( strlen(filename) > 0 ) {
+                sprintf(system_command, "mkdir \"%s\\root\\%s\"", state->data_dir, filename);
+                // TEMPCOMMENT: printf("MKDIR: %s\n", system_command);
+                system(system_command);
+            }
+            *last_sep = '\\';
         }
-        *last_sep = '\\';
 
-        sprintf(system_command, "copy /Y \"%s\" \"%s\\root\\%s\"", filename, state->data_dir, state->tracked_files[i]);
-        printf("DEBUG: %s\n", system_command);
+        sprintf(system_command, "copy /Y \"%s\" \"%s\\root\\%s\"", filename, state->data_dir, filename);
+        // TEMPCOMMENT: printf("DEBUG: %s\n", system_command);
         system(system_command);
     }
     chdir(original_path);
@@ -167,7 +169,12 @@ int find_state_file(State* state, char* filename) // Relative to root without .
 // Returns 0 upon success, returns 1 if the file is already added
 int add_state_file(State* state, char* filename, enum Filestat file_stat) // Relative to root
 {
-    if ( find_state_file(state, filename) > -1 ) return 1;
+    int file_ind = find_state_file(state, filename);
+    if ( file_ind > -1 ) {
+        // Update state
+        state->file_stat[file_ind] = file_stat;
+        return 1;
+    }
     strcpy(state->tracked_files[state->n_files], filename);
     state->file_stat[state->n_files] = file_stat;
     state->n_files++;
