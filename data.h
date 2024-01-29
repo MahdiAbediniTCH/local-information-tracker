@@ -13,7 +13,7 @@
 #include "struct-state.h"
 
 // Function prototypes because of bad source management
-int make_initial_empty_stage();
+int create_root_commit();
 
 // search in current dir and parents
 char* find_root_path()
@@ -216,6 +216,7 @@ char* get_alias(char* alias)
     }
     return NULL;
 }
+
 // * This function should be further developed in respect to other features that are yet to be added
 int initialize_repo() 
 {
@@ -230,19 +231,22 @@ int initialize_repo()
     fclose(fopen("alias.txt", "w")); // Create empty alias file
     // User info file
     FILE* f_user = fopen("user.txt", "w");
-    fprintf(f_user, "Default\ndefault@user.info\n");
+    // fprintf(f_user, "Default\ndefault@user.info\n");
     fclose(f_user);
     chdir("..");
     // States
     mkdir("states"); chdir("states");
     mkdir("stage");
     chdir("stage");
-    // make_initial_empty_stage();
+    
     chdir("..");
 
     mkdir("commits");
+    
     // commits
-    // create_root_commit();
+    create_root_commit();
+    change_head(0);
+    create_stage();
     chdir("..\\.."); // Go back to the original path
     return 0;
 }

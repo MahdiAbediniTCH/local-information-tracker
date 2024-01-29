@@ -25,6 +25,7 @@ bool is_root()
     return strlen(path) < 4; // In windows, all drive names are 1 letter long (e.g. f:/)
 }
 
+
 bool is_ignored(char* filename)
 {
     if (strcmp(filename, ".lit") == 0 ||

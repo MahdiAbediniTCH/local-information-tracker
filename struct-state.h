@@ -63,7 +63,9 @@ State* read_state(char* path)
     chdir(path);
     FILE* meta = fopen("meta.txt", "r");
     // ID
-    if (fscanf(meta, "%x\n", &(state->state_id)) == EOF) return NULL; // TODO: sure about the line break?
+    if (fscanf(meta, "%x\n", &(state->state_id)) == EOF) return NULL;
+    // Parent ID
+    if (fscanf(meta, "%x\n", &(state->parent_id)) == EOF) return NULL;
     // Branch
     if (fgets(state->branch_name, BRANCH_NAME_MAX, meta) == NULL) return NULL;
     state->branch_name[strcspn(state->branch_name, "\n\r")] = '\0';
@@ -111,7 +113,7 @@ int write_state(State* state, char* path)
     mkdir("root");
     // Writing meta data
     FILE* meta = fopen("meta.txt", "w");
-    fprintf(meta, "%x\n%s\n%s\n%s\n~%s~\n", state->state_id, state->branch_name, state->author_name, state->author_email, state->message); // Important order
+    fprintf(meta, "%x\n%x\n%s\n%s\n%s\n~%s~\n", state->state_id, state->parent_id, state->branch_name, state->author_name, state->author_email, state->message); // Important order
     fclose(meta);
     // Writing file info
     FILE* files = fopen("files.txt", "w");
@@ -261,4 +263,11 @@ State* inherit_state(State* parent, int id)
     return state;
 }
 
+State* get_state_by_id(int id)
+{
+    char datadir[PATH_MAX];
+    get_state_data_dir(datadir, id);
+    State* state = read_state(datadir);
+    return state;
+}
 #endif
