@@ -12,9 +12,10 @@
 
 bool is_file(const char* name)
 {
-    struct stat path;
-    stat(name, &path);
-    return S_ISREG(path.st_mode);
+    FILE* tmp = fopen(name, "r");
+    if ( tmp == NULL ) return false;
+    fclose(tmp);
+    return true;
 }
 
 bool is_root()
@@ -46,9 +47,9 @@ bool file_exists(char name[], bool is_dir)
 // Returns 1 if relative_to is not a parent directory of path, 0 otherwise
 int relative_path(char* path, const char* relative_to)
 {
-    char* tmp = strstr(relative_to, path);
+    char* tmp = strstr(path, relative_to);
     if ( tmp == NULL ) return 1;
-    memmove(path, path + strlen(relative_to), strlen(path) - strlen(relative_to) + 1);
+    memmove(path, path + strlen(relative_to) + 1, strlen(path) - strlen(relative_to) + 1);
     return 0;
 }
 

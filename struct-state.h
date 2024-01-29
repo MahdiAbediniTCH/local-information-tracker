@@ -191,6 +191,43 @@ int add_state_file(State* state, char* filename, enum Filestat file_stat) // Rel
     state->n_files++;
     return 0;
 }
+// Returns 1 if the file is not found, 2 if deleted
+int copy_state_file(State* state, char* filename)
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_root_path());
+
+    int ind = find_state_file(state, filename);
+    if (ind == -1) return 1;
+    if (state->file_stat[ind] == S_DELETED) {
+        char file_path[PATH_MAX];
+        sprintf(file_path, "%s\\root\\%s", state->data_dir, filename);
+        if ( remove(file_path) == -1 ) {
+            // TEMPCOMMENT: printf("DBG: THIS FILE NOT FOUND\n");
+        }
+        return 2;
+    }
+    // Temporarily changing the filename to make the folders
+    char system_command[PATH_MAX];
+    char* last_sep = strrchr(filename, '\\');
+    if ( last_sep != NULL ) {
+        *last_sep = '\0';
+        if ( strlen(filename) > 0 ) {
+            sprintf(system_command, "mkdir \"%s\\root\\%s\"", state->data_dir, filename);
+            // TEMPCOMMENT: printf("MKDIR: %s\n", system_command);
+            system(system_command);
+        }
+        *last_sep = '\\';
+    }
+
+    sprintf(system_command, "copy /Y \"%s\" \"%s\\root\\%s\"", filename, state->data_dir, filename);
+    // TEMPCOMMENT: printf("DEBUG: %s\n", system_command);
+    system(system_command);
+
+    chdir(original_path);
+    return 0;
+}
 
 int get_state_data_dir(char* datadir, int id)
 {
@@ -224,8 +261,4 @@ State* inherit_state(State* parent, int id)
     return state;
 }
 
-int add_and_copy_file(State* state, char* filename) // Relative to root
-{
-
-}
 #endif

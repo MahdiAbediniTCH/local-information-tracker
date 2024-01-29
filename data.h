@@ -24,6 +24,7 @@ char* find_root_path()
         if ( file_exists(LITDIR_NAME, true) ) {
             char* result = (char*) malloc(PATH_MAX * sizeof(char));
             getcwd(result, PATH_MAX);
+            chdir(original_path);
             return result;
         }
         if ( is_root() ) break;

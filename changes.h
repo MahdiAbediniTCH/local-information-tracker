@@ -23,19 +23,20 @@ State* get_stage_object()
 int stage_file(char* filename, State* stage_obj) 
 {
     if ( file_exists(filename, true) ) { // Directory
-        DIR* folder = opendir(filename);
-        if (folder == NULL) return 1;
-        struct dirent* entry;
-        // Change working directory to the folder and keeping the original path
         char original_path[PATH_MAX];
         getcwd(original_path, sizeof(original_path));
         chdir(filename);
+
+        DIR* folder = opendir(".");
+        if (folder == NULL) return 1;
+        struct dirent* entry;
+        // Change working directory to the folder and keeping the original path
         while ( (entry = readdir(folder)) != NULL ) {
             if ( is_ignored(entry->d_name) ) continue;
             stage_file(entry->d_name, stage_obj);
         }
-        chdir(original_path);
         closedir(folder);
+        chdir(original_path);
         return 0;
     } else if ( file_exists(filename, false) ) { // File
         char* relpath = file_relative_to_root(filename, find_root_path());
@@ -45,8 +46,9 @@ int stage_file(char* filename, State* stage_obj)
             // TODO: AFTER DOING THE COMMITS, DO THE CHANGES WITH DIFFERENT STATS
             
         }
+        // TODO: must compare to HEAD
         add_state_file(stage_obj, relpath, S_ADDED);
-        // TOODODODODOD: Instead of updating all you should only update the new file (im gonna kms)
+        copy_state_file(stage_obj, relpath);
         return 0;
     } else {
         return 1;
