@@ -1,4 +1,5 @@
 
+#include "changes.h"
 #include "data.h"
 #include "struct-state.h"
 #include <time.h>
@@ -16,18 +17,13 @@ void debug_state(State* state)
 }
 
 int main() {
-    State* state = initialize_state(0xab, "hello\nworsssld!\naaa.", "brrr", "mmd", "mmd@mmd.mdd", ".lit\\states\\stage");
-    debug_state(state);
-    // printf("Write Value: %d\n", write_state(state, state->data_dir));
-    State* state2 = read_state(state->data_dir);
-    debug_state(state2);
+    State* state2 = initialize_state(0xab, 0x0, "hello\nworsssld!\naaa.", "brrr", "mmd", "mmd@mmd.mdd", ".lit\\states\\stage");
     add_state_file(state2, "data.exe", S_DELETED);
     add_state_file(state2, "exec-cmd.exe", S_ADDED);
     add_state_file(state2, "testicle\\balls\\ball.txt", S_ADDED);
     add_state_file(state2, "balls\\thisis.txt", S_ADDED);
-    write_state(state2, state2->data_dir);
-    State* state3 = read_state(state2->data_dir);
-    debug_state(state3);
-    update_all_state_files(state3);
-    printf("done\n");
+    debug_state(state2);
+    remove_file_from_state_data(state2, "exec-cmd.exe");
+    debug_state(state2);
+    
 }

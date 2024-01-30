@@ -1,12 +1,13 @@
 #ifndef CONSTANTS_H // Include guarding
 #define CONSTANTS_H
 // Allowed commands
-#define N_COMMANDS 3 // Number of allowed commands
+#define N_COMMANDS 4 // Number of allowed commands
 #define COMMAND_MAX 100 // Maximum length of a command
 const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "config", 
 "init", 
 "add",
+"reset",
 
 };
 // User info
@@ -36,7 +37,8 @@ FILEN_NOT_FOUND[] = "Could not locate file %s\n",
 STAGE_SUCCESS[] = "File(s) staged successfully\n",
 FILE_IS_STAGED_COLOR[] = "\033[0;32mStaged\033[0m\n",
 FILE_ISNT_STAGED_COLOR[] = "\033[0;33mNot staged\033[0m\n",
-FILE_IS_UNTRACKED_COLOR[] = "\033[0;31mUntracked\033[0m\n"
+FILE_IS_UNTRACKED_COLOR[] = "\033[0;31mUntracked\033[0m\n",
+RESET_SUCCESS[] = "File(s) unstaged successfully\n"
 ;
 
 // Paths

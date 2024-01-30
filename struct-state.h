@@ -161,11 +161,7 @@ int update_all_state_files(State* state)
     for (int i = 0; i < state->n_files; i++) {
         char* filename = state->tracked_files[i];
         if (state->file_stat[i] == S_DELETED) {
-            char file_path[PATH_MAX];
-            sprintf(file_path, "%s\\root\\%s", state->data_dir, filename);
-            if ( remove(file_path) == -1 ) {
-                // TEMPCOMMENT: printf("DBG: THIS FILE NOT FOUND\n");
-            }
+            delete_state_file(state, filename);
             continue;
         }
         // Temporarily changing the filename to make the folders
@@ -216,7 +212,7 @@ int add_state_file(State* state, char* filename, enum Filestat file_stat) // Rel
     return 0;
 }
 // Returns 1 if the file is not found, 2 if deleted
-int copy_state_file(State* state, char* filename)
+int copy_state_file_from_wd(State* state, char* filename)
 {
     char original_path[PATH_MAX];
     getcwd(original_path, sizeof(original_path));
@@ -251,6 +247,34 @@ int copy_state_file(State* state, char* filename)
 
     chdir(original_path);
     return 0;
+}
+// Returns 1 upon success, 0 if the file is already deleted
+int delete_state_file(State* state, char* relpath)
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_root_path());
+
+    char file_path[PATH_MAX];
+    sprintf(file_path, "%s\\root\\%s", state->data_dir, relpath);
+    if ( remove(file_path) == -1 ) {
+        chdir(original_path);
+        return 1;
+    }
+    chdir(original_path);
+    return 0;
+}
+
+// Returns the deleted index
+int remove_file_from_state_data(State* state, char* relpath)
+{
+    int ind = find_state_file(state, relpath);
+    if (ind != -1) {
+        state->n_files--;
+        memmove(state->tracked_files + ind, state->tracked_files + ind + 1, sizeof(state->tracked_files[0]) * (state->n_files - ind));
+        memmove(state->file_stat + ind, state->file_stat + ind + 1, sizeof(state->file_stat[0]) * (state->n_files - ind));
+    }
+    return ind;
 }
 
 int get_state_data_dir(char* datadir, int id)
@@ -305,6 +329,63 @@ FILE* open_state_file(State* state, char* relpath)
     //
     chdir(original_path);
     return file;
+}
+// Doesn't validate anything
+int copy_only_file(const State* dest, const State* source, char* relpath)
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_root_path());
+
+    // Temporarily changing the filename to make the folders
+    char system_command[PATH_MAX];
+    char* last_sep = strrchr(relpath, '\\');
+    if ( last_sep != NULL ) {
+        *last_sep = '\0';
+        if ( strlen(relpath) > 0 ) {
+            sprintf(system_command, "mkdir \"%s\\root\\%s\" >NUL 2>NUL", dest->data_dir, relpath);
+            // TEMPCOMMENT: printf("MKDIR: %s\n", system_command);
+            system(system_command);
+        }
+        *last_sep = '\\';
+    }
+
+    sprintf(system_command, "copy /Y \"%s\\root\\%s\" \"%s\\root\\%s\" >NUL 2>NUL", source->data_dir, relpath, dest->data_dir, relpath);
+    // TEMPCOMMENT: printf("DEBUG: %s\n", system_command);
+    system(system_command);
+
+    chdir(original_path);
+    return 0;
+}
+
+// Also copies the file, 1: deleted the file to match, 0: matched the file data
+int copy_file_attributes(State* dest, const State* source, char* relpath, bool is_stage)
+{
+    int ind_source = find_state_file(source, relpath);
+    int ind_dest = find_state_file(dest, relpath);
+    if (ind_source == -1) {
+        delete_state_file(dest, relpath);
+        remove_file_from_state_data(dest, relpath);
+        return 1;
+    }
+    if (ind_dest == -1) {
+        add_state_file(dest, relpath, source->file_stat[ind_source]);
+    } else {
+        dest->file_stat[ind_dest] = source->file_stat[ind_source];
+    }
+    if (is_stage) {
+        if (source->file_stat[ind_source] != S_DELETED) {
+            dest->file_stat[ind_dest] = S_UNCHANGED;
+        }
+    }
+    // not sure about the below condition
+    if (source->file_stat[ind_source] != S_DELETED) {
+        copy_only_file(dest, source, relpath);
+    // TODO: Maybe it's necessary to keep the old versions
+    } else {
+        delete_state_file(dest, relpath);
+    }
+    return 0;
 }
 
 #endif

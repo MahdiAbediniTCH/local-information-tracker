@@ -81,14 +81,15 @@ int stage_file(char* filename, State* stage_obj)
         DIR* folder = opendir(".");
         if (folder == NULL) return 1;
         struct dirent* entry;
+        int returnval = 0;
         // Change working directory to the folder and keeping the original path
         while ( (entry = readdir(folder)) != NULL ) {
             if ( is_ignored(entry->d_name) ) continue;
-            stage_file(entry->d_name, stage_obj);
+            returnval = returnval || !stage_file(entry->d_name, stage_obj);
         }
         closedir(folder);
         chdir(original_path);
-        return 0;
+        return !returnval;
     } else if ( file_exists(filename, false) ) { // File
         char* relpath = file_relative_to_root(filename, find_root_path());
         int f_ind = find_state_file(stage_obj, relpath);
@@ -100,14 +101,14 @@ int stage_file(char* filename, State* stage_obj)
         }
         
         add_state_file(stage_obj, relpath, S_ADDED);
-        copy_state_file(stage_obj, relpath);
+        copy_state_file_from_wd(stage_obj, relpath);
         return 0;
     } else {
         return 1;
     }
 }
 
-int add_n_files(char* filename, State* stage_obj, int depth) 
+int print_stage_status(char* filename, State* stage_obj, int depth) 
 {
     if ( file_exists(filename, true) ) { // Directory
         if (depth < 1) return 0;
@@ -122,7 +123,7 @@ int add_n_files(char* filename, State* stage_obj, int depth)
         // Change working directory to the folder and keeping the original path
         while ( (entry = readdir(folder)) != NULL ) {
             if ( is_ignored(entry->d_name) ) continue;
-            add_n_files(entry->d_name, stage_obj, depth);
+            print_stage_status(entry->d_name, stage_obj, depth);
         }
         closedir(folder);
         chdir(original_path);
@@ -188,4 +189,41 @@ int create_stage()
     write_state(stage, stage->data_dir);
     update_all_state_files(stage);
 } 
+
+// Return codes 0: success, 1: file not found, 2: already staged
+int unstage_file(char* filename, State* stage_obj) 
+{
+    if ( file_exists(filename, true) ) { // Directory
+        char original_path[PATH_MAX];
+        getcwd(original_path, sizeof(original_path));
+        chdir(filename);
+
+        DIR* folder = opendir(".");
+        if (folder == NULL) return 1;
+        struct dirent* entry;
+        int returnval = 0;
+        // Change working directory to the folder and keeping the original path
+        while ( (entry = readdir(folder)) != NULL ) {
+            if ( is_ignored(entry->d_name) ) continue;
+            returnval = returnval || !unstage_file(entry->d_name, stage_obj);
+        }
+        closedir(folder);
+        chdir(original_path);
+        return !returnval;
+    } else if ( file_exists(filename, false) ) { // File
+        char* relpath = file_relative_to_root(filename, find_root_path());
+        int f_ind = find_state_file(stage_obj, relpath);
+        bool is_staged = false;
+        if (f_ind > -1) {
+            enum Filestat fstat = stage_obj->file_stat[f_ind];
+            // TODO: AFTER DOING THE COMMITS, DO THE CHANGES WITH DIFFERENT STATS ////???/////
+            
+        }
+        copy_file_attributes(stage_obj, get_head_commit(), relpath, true);
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
 #endif // CHANGES_H

@@ -1,3 +1,6 @@
+#ifndef EXECCMD_H
+#define EXECCMD_H
+
 #include <stdio.h>
 #include "data.h"
 #include "changes.h"
@@ -77,7 +80,7 @@ int exec_add(int argc, char *argv[])
                 return 1;
             }
             arg_ind++;
-            add_n_files(".", get_stage_object(), atoi(argv[3]));
+            print_stage_status(".", get_stage_object(), atoi(argv[3]));
             return 0;
         } else if ( strcmp(argv[arg_ind] + 1, "f") == 0 ) {
             arg_ind++;
@@ -96,6 +99,7 @@ int exec_add(int argc, char *argv[])
             return 1;
         }
     }
+    // TODO: did_stage doesn't get the good result from the function
     bool did_stage = false;
     for (int i = arg_ind; i < argc; i++) {
         // TODO: Later implement deleting files that were staged before
@@ -115,3 +119,53 @@ int exec_add(int argc, char *argv[])
     }
     return 1;
 }
+
+int exec_reset(int argc, char *argv[])
+{
+    if ( !is_in_repo() ) {
+        printerr(NOT_REPO);
+        return 1;
+    }
+    if (argc < 3) {
+        printerr(FEW_ARGUMENTS);
+        return 1;
+    }
+    int arg_ind = 2;
+    if (argv[arg_ind][0] == '-') {
+        if ( strcmp(argv[arg_ind] + 1, "f") == 0 ) {
+            arg_ind++;
+        } else if ( strcmp(argv[arg_ind] + 1, "undo") == 0 ) {
+            if ( argc != 3) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            arg_ind++;
+            if ( execute_last_add_cmd() != 0 ) { // stfufufufufufu
+                printerr("No last record was found\n");
+            }
+            return 0;
+        } else {
+            printerr(INVALID_OPTION);
+            return 1;
+        }
+    }
+    bool did_unstage = false;
+    for (int i = arg_ind; i < argc; i++) {
+        // TODO: Later implement deleting files that were staged before
+        State* stage_obj = get_stage_object();
+        int return_status = unstage_file(argv[i], stage_obj);
+        write_state(stage_obj, stage_obj->data_dir);
+        if (!return_status) {
+            did_unstage = true;
+        } else if (return_status == 1) {
+            printf(FILEN_NOT_FOUND, argv[i]);
+        }
+    }
+    if (did_unstage) {
+        printf(RESET_SUCCESS);
+        return 0;
+    }
+    return 1;
+}
+
+#endif
