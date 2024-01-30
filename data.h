@@ -78,6 +78,18 @@ int create_config_global()
     }
     return 1;
 }
+// Read mode
+FILE* open_wd_file(char* relpath)
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_root_path());
+    //
+    FILE* file = fopen(relpath, "r");
+    //
+    chdir(original_path);
+    return file;
+}
 
 // Configures user.name / note that it assumes that all files already exist with data in them
 int config_user(char* setting, char* data, int is_global) 
@@ -245,7 +257,7 @@ int initialize_repo()
     
     // commits
     create_root_commit();
-    change_head(0);
+    change_head(ROOT_ID);
     create_stage();
     chdir("..\\.."); // Go back to the original path
     return 0;

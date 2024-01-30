@@ -33,7 +33,10 @@ NOT_REPO[] = "Not a lit repository\n",
 // messages
 REPO_INIT_MESSAGE[] = "Initialized empty Git repository in %s\n",
 FILEN_NOT_FOUND[] = "Could not locate file %s\n",
-STAGE_SUCCESS[] = "File(s) staged successfully\n"
+STAGE_SUCCESS[] = "File(s) staged successfully\n",
+FILE_IS_STAGED_COLOR[] = "\033[0;32mStaged\033[0m\n",
+FILE_ISNT_STAGED_COLOR[] = "\033[0;33mNot staged\033[0m\n",
+FILE_IS_UNTRACKED_COLOR[] = "\033[0;31mUntracked\033[0m\n"
 ;
 
 // Paths
@@ -45,9 +48,15 @@ STAGE_SUCCESS[] = "File(s) staged successfully\n"
 // Commits
 #define COMMIT_MESSAGE_MAX 72
 #define MAX_TRACKED_FILES 200
+#define ROOT_ID 0x00
+#define STAGE_ID 0x01
+
 
 // Branch
 #define BRANCH_NAME_MAX 40
+
+// File
+#define MAX_LINE_LENGTH 300
 
 // Usage text
 const char USAGE[] = "usage: lit <command> [<args>]\n";

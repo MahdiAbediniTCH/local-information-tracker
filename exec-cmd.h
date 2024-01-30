@@ -76,7 +76,8 @@ int exec_add(int argc, char *argv[])
                 return 1;
             }
             arg_ind++;
-            // TODO: SHOW FILES AND DIRECTORIES 
+            add_n_files(".", get_stage_object(), atoi(argv[3]));
+            return 0;
         } else if ( strcmp(argv[arg_ind] + 1, "f") == 0 ) {
             arg_ind++;
         // TODO: add -redo option

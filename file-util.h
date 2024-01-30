@@ -64,4 +64,19 @@ char* file_relative_to_root(const char* filename_only, const char* relative_to)
     return rel_path;
 }
 
+bool is_the_same_textfile(FILE* f1, FILE* f2)
+{
+    bool are_same = true;
+    for (;;) {
+        char char1 = fgetc(f1), char2 = fgetc(f2);
+        if (char1 != char2) {
+            are_same = false;
+            break;
+        }
+        if (char1 == EOF) break;
+    }
+    rewind(f1); rewind(f2);
+    return are_same;
+}
+
 #endif // FILEUTIL_H

@@ -62,21 +62,43 @@ State* read_state(char* path)
     chdir(find_root_path());
     chdir(path);
     FILE* meta = fopen("meta.txt", "r");
+    if (meta == NULL) {
+        chdir(original_path);
+        return NULL;
+    }
     // ID
-    if (fscanf(meta, "%x\n", &(state->state_id)) == EOF) return NULL;
+    if (fscanf(meta, "%x\n", &(state->state_id)) == EOF) {
+        chdir(original_path);
+        return NULL;
+    }
     // Parent ID
-    if (fscanf(meta, "%x\n", &(state->parent_id)) == EOF) return NULL;
+    if (fscanf(meta, "%x\n", &(state->parent_id)) == EOF) {
+        chdir(original_path);
+        return NULL;
+    }
     // Branch
-    if (fgets(state->branch_name, BRANCH_NAME_MAX, meta) == NULL) return NULL;
+    if (fgets(state->branch_name, BRANCH_NAME_MAX, meta) == NULL) {
+        chdir(original_path);
+        return NULL;
+    }
     state->branch_name[strcspn(state->branch_name, "\n\r")] = '\0';
     // Author name
-    if (fgets(state->author_name, BRANCH_NAME_MAX, meta) == NULL) return NULL;
+    if (fgets(state->author_name, BRANCH_NAME_MAX, meta) == NULL) {
+        chdir(original_path);
+        return NULL;
+    }
     state->author_name[strcspn(state->author_name, "\n\r")] = '\0';
     // Author email
-    if (fgets(state->author_email, BRANCH_NAME_MAX, meta) == NULL) return NULL;
+    if (fgets(state->author_email, BRANCH_NAME_MAX, meta) == NULL) {
+        chdir(original_path);
+        return NULL;
+    }
     state->author_email[strcspn(state->author_email, "\n\r")] = '\0';
     // Commit message
-    if (fscanf(meta, "~%[^~]", state->message) == EOF) return NULL;
+    if (fscanf(meta, "~%[^~]", state->message) == EOF) {
+        chdir(original_path);
+        return NULL;
+    }
     fclose(meta);
     // Files
     FILE* tracked_f = fopen("files.txt", "r");
@@ -152,14 +174,14 @@ int update_all_state_files(State* state)
         if ( last_sep != NULL ) {
             *last_sep = '\0';
             if ( strlen(filename) > 0 ) {
-                sprintf(system_command, "mkdir \"%s\\root\\%s\"", state->data_dir, filename);
+                sprintf(system_command, "mkdir \"%s\\root\\%s\" >NUL 2>NUL", state->data_dir, filename);
                 // TEMPCOMMENT: printf("MKDIR: %s\n", system_command);
                 system(system_command);
             }
             *last_sep = '\\';
         }
 
-        sprintf(system_command, "copy /Y \"%s\" \"%s\\root\\%s\"", filename, state->data_dir, filename);
+        sprintf(system_command, "copy /Y \"%s\" \"%s\\root\\%s\" >NUL 2>NUL", filename, state->data_dir, filename);
         // TEMPCOMMENT: printf("DEBUG: %s\n", system_command);
         system(system_command);
     }
@@ -216,14 +238,14 @@ int copy_state_file(State* state, char* filename)
     if ( last_sep != NULL ) {
         *last_sep = '\0';
         if ( strlen(filename) > 0 ) {
-            sprintf(system_command, "mkdir \"%s\\root\\%s\"", state->data_dir, filename);
+            sprintf(system_command, "mkdir \"%s\\root\\%s\" >NUL 2>NUL", state->data_dir, filename);
             // TEMPCOMMENT: printf("MKDIR: %s\n", system_command);
             system(system_command);
         }
         *last_sep = '\\';
     }
 
-    sprintf(system_command, "copy /Y \"%s\" \"%s\\root\\%s\"", filename, state->data_dir, filename);
+    sprintf(system_command, "copy /Y \"%s\" \"%s\\root\\%s\" >NUL 2>NUL", filename, state->data_dir, filename);
     // TEMPCOMMENT: printf("DEBUG: %s\n", system_command);
     system(system_command);
 
@@ -234,11 +256,11 @@ int copy_state_file(State* state, char* filename)
 int get_state_data_dir(char* datadir, int id)
 {
     // Stage
-    if (id == 0x01) {
+    if (id == STAGE_ID) {
         strcpy(datadir, ".lit\\states\\stage");
         return 1; // meaning stage
     // Commits
-    } else if (id >= 0x10 || id == 0x00) {
+    } else if (id >= 0x10 || id == ROOT_ID) {
         sprintf(datadir, ".lit\\states\\commits\\%x", id);
         return 0;
     }
@@ -270,4 +292,19 @@ State* get_state_by_id(int id)
     State* state = read_state(datadir);
     return state;
 }
+
+FILE* open_state_file(State* state, char* relpath)
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_root_path());
+    //
+    char path[PATH_MAX];
+    sprintf(path, "%s\\root\\%s", state->data_dir, relpath);
+    FILE* file = fopen(path, "r");
+    //
+    chdir(original_path);
+    return file;
+}
+
 #endif
