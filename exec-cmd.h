@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "data.h"
 #include "changes.h"
+#include "action-history.h"
 
 int exec_config(int argc, char *argv[])
 {
@@ -80,7 +81,16 @@ int exec_add(int argc, char *argv[])
             return 0;
         } else if ( strcmp(argv[arg_ind] + 1, "f") == 0 ) {
             arg_ind++;
-        // TODO: add -redo option
+        } else if ( strcmp(argv[arg_ind] + 1, "redo") == 0 ) {
+            if ( argc != 3) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            arg_ind++;
+            if ( execute_last_add_cmd() != 0 ) {
+                printerr("No last record was found\n");
+            }
+            return 0;
         } else {
             printerr(INVALID_OPTION);
             return 1;
@@ -99,6 +109,7 @@ int exec_add(int argc, char *argv[])
         }
     }
     if (did_stage) {
+        store_last_add_cmd(argc, argv);
         printf(STAGE_SUCCESS);
         return 0;
     }
