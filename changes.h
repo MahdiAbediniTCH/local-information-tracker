@@ -48,6 +48,20 @@ int last_commit_id()
     return max_id;
 }
 
+State* get_head_commit()
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_repo_data());
+    int id;
+    FILE* head_f = fopen("states\\commits\\HEAD", "rb");
+    fread(&id, sizeof(int), 1, head_f);
+    fclose(head_f);
+    chdir(original_path);
+    return get_state_by_id(id);
+}
+
+
 enum Filestat calculate_new_state(int prior_id, int latter_id, char* relpath)
 {
     State* prior = get_state_by_id(prior_id);
@@ -120,13 +134,10 @@ int stage_file(char* filename, State* stage_obj)
         char* relpath = file_relative_to_root(filename, find_root_path());
         int f_ind = find_state_file(stage_obj, relpath);
         bool is_staged = false;
-        if (f_ind > -1) {
-            enum Filestat fstat = stage_obj->file_stat[f_ind];
-            // TODO: AFTER DOING THE COMMITS, DO THE CHANGES WITH DIFFERENT STATS ////???/////
-            
-        }
-        
-        add_state_file(stage_obj, relpath, S_ADDED);
+        enum Filestat stat = compare_wd_with_state(get_head_id(), relpath);
+        State* head = get_head_commit();
+        if (stat == S_UNCHANGED && head->file_stat[find_state_file(head, relpath)] == S_DELETED) return 2;
+        add_state_file(stage_obj, relpath, stat);
         copy_state_file_from_wd(stage_obj, relpath);
         return 0;
     } else {
@@ -143,7 +154,7 @@ int detect_deleted_files()
         if (head->file_stat[i] == S_DELETED) continue;
         char* relpath = head->tracked_files[i];
         int s_ind = find_state_file(stage, relpath);
-        if (state.file_stat[s_ind] == S_DELETED) continue;
+        if (stage->file_stat[s_ind] == S_DELETED) continue;
         enum Filestat stat = compare_wd_with_state(head, relpath);
         if (stat == S_DELETED) {
             found = true;
@@ -198,12 +209,6 @@ int print_stage_status(char* filename, State* stage_obj, int depth)
     }
 }
 
-
-int create_new_commit(int id, int parent_id, char* message, char* branch, char* name, char* email, char* data_dir)
-{
-    
-}
-
 int get_head_id()
 {
     char original_path[PATH_MAX];
@@ -215,19 +220,6 @@ int get_head_id()
     fclose(head_f);
     chdir(original_path);
     return id;
-}
-
-State* get_head_commit()
-{
-    char original_path[PATH_MAX];
-    getcwd(original_path, sizeof(original_path));
-    chdir(find_repo_data());
-    int id;
-    FILE* head_f = fopen("states\\commits\\HEAD", "rb");
-    fread(&id, sizeof(int), 1, head_f);
-    fclose(head_f);
-    chdir(original_path);
-    return get_state_by_id(id);
 }
 
 int change_head(int head_id)
@@ -282,13 +274,7 @@ int unstage_file(char* filename, State* stage_obj)
         return !returnval;
     } else if ( file_exists(filename, false) ) { // File
         char* relpath = file_relative_to_root(filename, find_root_path());
-        int f_ind = find_state_file(stage_obj, relpath);
-        bool is_staged = false;
-        if (f_ind > -1) {
-            enum Filestat fstat = stage_obj->file_stat[f_ind];
-            // TODO: AFTER DOING THE COMMITS, DO THE CHANGES WITH DIFFERENT STATS ////???/////
-            
-        }
+        // TODO: AFTER DOING THE COMMITS, DO THE CHANGES WITH DIFFERENT STATS ////???///// wym?
         copy_file_attributes(stage_obj, get_head_commit(), relpath, true);
         return 0;
     } else {
@@ -320,7 +306,7 @@ int show_file_status(char* filename, State* head_obj, State* stage_obj)
         enum Filestat stat_head = compare_wd_with_state(get_head_id(), relpath);
         if (stat_head == S_UNCHANGED) return 1;
 
-        printf("\t~ %s: ", relpath);
+        printf("    ~ %s: ", relpath);
         if (f_ind > -1) {
             enum Filestat stat = compare_wd_with_state(STAGE_ID, relpath);
             if (stat == S_UNCHANGED) {
@@ -350,7 +336,7 @@ bool show_deleted_files()
         enum Filestat stat = compare_wd_with_state(get_head_id(), relpath);
         if (stat == S_DELETED) {
             didprint = true;
-            printf("\t~ %s: ", relpath);
+            printf("    ~ %s: ", relpath);
             enum Filestat stat = compare_wd_with_state(STAGE_ID, relpath);
             if (stat == S_UNCHANGED) {
                 printf(GREED_PLUS);

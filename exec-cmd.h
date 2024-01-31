@@ -113,6 +113,7 @@ int exec_add(int argc, char *argv[])
         }
     }
     // Detect deleted files
+    // TODO:(?) if a staged file is not in head and gets deleted, it can't be updated with add
     if (detect_deleted_files()) {
         printf("Detected file deletion compared to HEAD\n");
     }
@@ -184,7 +185,7 @@ int exec_status(int argc, char *argv[])
         return 1;
     }
     char branch[BRANCH_NAME_MAX];
-    printf(ON_BRANCH, get_current_branch_name(branch);
+    printf(ON_BRANCH, get_current_branch_name(branch));
     show_file_status(find_root_path(), get_head_commit(), get_stage_object());
     show_deleted_files();
 }

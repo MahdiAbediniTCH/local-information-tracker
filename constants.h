@@ -50,7 +50,7 @@ MODIFIED_COLOR[] = "\033[0;36mM\033[0m\n",
 ADDED_COLOR[] = "\033[0;32mA\033[0m\n",
 DELETED_COLOR[] = "\033[0;31mD\033[0m\n",
 COMMIT_SUCCESS[] = "Changes committed successfully \nCommit id: \033[0;36m%x\033[0m \nTime created: \033[0;34m%s\033[0m",
-ON_BRANCH[] = "On branch \033[0;32m%s\033[0m\n"
+ON_BRANCH[] = "On branch \033[0;32m%s\033[0m\n\n"
 ;
 
 // Paths
