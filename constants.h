@@ -36,7 +36,7 @@ MSG_TOO_LONG[] = "Commit message is too long\n",
 EXPECTED_MSG[] = "Expected a commit message\n",
 NOTHING_TO_COMMIT[] = "There is nothing to be committed (try lit add <file>)\n",
 // messages
-REPO_INIT_MESSAGE[] = "Initialized empty Git repository in %s\n",
+REPO_INIT_MESSAGE[] = "Initialized empty Lit repository in %s\n",
 FILEN_NOT_FOUND[] = "Could not locate file %s\n",
 STAGE_SUCCESS[] = "File(s) staged successfully\n",
 FILE_IS_STAGED_COLOR[] = "\033[0;32mStaged\033[0m\n",
@@ -49,7 +49,7 @@ GREED_PLUS[] = "\033[0;32m+\033[0m",
 MODIFIED_COLOR[] = "\033[0;36mM\033[0m\n",
 ADDED_COLOR[] = "\033[0;32mA\033[0m\n",
 DELETED_COLOR[] = "\033[0;31mD\033[0m\n",
-COMMIT_SUCCESS[] = "Changes committed successfully\n"
+COMMIT_SUCCESS[] = "Changes committed successfully \nCommit id: \033[0;36m%x\033[0m \nTime created: \033[0;34m%s\033[0m"
 ;
 
 // Paths

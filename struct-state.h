@@ -24,7 +24,7 @@ enum Filestat{
 };
 
 typedef struct State {
-    int state_id; // Commit id is incremented with each commit, starts with 0x10
+    int state_id; // Commit id is incremented with each commit, starts with 0xa0
     int parent_id;
     time_t time_created;
     char message[COMMIT_MESSAGE_MAX + 1];
@@ -284,7 +284,7 @@ int get_state_data_dir(char* datadir, int id)
         strcpy(datadir, ".lit\\states\\stage");
         return 1; // meaning stage
     // Commits
-    } else if (id >= 0x10 || id == ROOT_ID) {
+    } else if (id >= 0xa0 || id == ROOT_ID) {
         sprintf(datadir, ".lit\\states\\commits\\%x", id);
         return 0;
     }

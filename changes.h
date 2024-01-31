@@ -31,12 +31,13 @@ int last_commit_id()
     DIR* folder = opendir("states\\commits");
     if (folder == NULL) return 1;
     struct dirent* entry;
-    int max_id = 0x0f;
+    int max_id = 0x9f;
     // Change working directory to the folder and keeping the original path
     while ( (entry = readdir(folder)) != NULL ) {
         if ( is_ignored(entry->d_name) ) continue;
         if (entry->d_type == DT_DIR) {
-            int id = atoi(entry->d_name);
+            int id;
+            sscanf(entry->d_name, "%x", &id);
             max_id = (id > max_id) ? id : max_id;
         }
     }
@@ -335,9 +336,9 @@ bool is_stage_empty()
     return true;
 }
 
-int do_a_commit(char* message)
+State* do_a_commit(char* message)
 {
-    if (is_stage_empty()) return 1;
+    if (is_stage_empty()) return NULL;
     State* stage = get_stage_object();
     State* commit = inherit_state(stage, last_commit_id() + 1);
     strcpy(commit->message, message);
@@ -347,7 +348,7 @@ int do_a_commit(char* message)
     copy_all_files(commit, stage);
     change_head(commit->state_id);
     create_stage();
-    return 0;
+    return commit;
 }
 
 #endif // CHANGES_H

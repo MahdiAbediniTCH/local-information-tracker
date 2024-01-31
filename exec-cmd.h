@@ -202,11 +202,11 @@ int exec_commit(int argc, char *argv[])
         printerr(MSG_TOO_LONG);
         return 1;
     }
-    int result = do_a_commit(argv[3]);
-    if (result == 0) {
-        printf(COMMIT_SUCCESS);
+    State* commit = do_a_commit(argv[3]);
+    if (commit != NULL) {
+        printf(COMMIT_SUCCESS, commit->state_id, ctime(&(commit->time_created)));
         return 0;
-    } else if (result == 1) {
+    } else {
         printerr(NOTHING_TO_COMMIT);
         return 1;
     }
