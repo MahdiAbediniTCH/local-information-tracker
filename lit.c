@@ -9,6 +9,7 @@ exec_config,
 exec_init,
 exec_add,
 exec_reset,
+exec_status,
 }; // Array of function pointers, indexes are respective to the indexes of strings in COMMANDS
 
 // Main command handler function

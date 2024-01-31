@@ -1,14 +1,14 @@
 #ifndef CONSTANTS_H // Include guarding
 #define CONSTANTS_H
 // Allowed commands
-#define N_COMMANDS 4 // Number of allowed commands
+#define N_COMMANDS 5 // Number of allowed commands
 #define COMMAND_MAX 100 // Maximum length of a command
 const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "config", 
 "init", 
 "add",
 "reset",
-
+"status", 
 };
 // User info
 #define USERNAME_MAX 30
@@ -38,7 +38,12 @@ STAGE_SUCCESS[] = "File(s) staged successfully\n",
 FILE_IS_STAGED_COLOR[] = "\033[0;32mStaged\033[0m\n",
 FILE_ISNT_STAGED_COLOR[] = "\033[0;33mNot staged\033[0m\n",
 FILE_IS_UNTRACKED_COLOR[] = "\033[0;31mUntracked\033[0m\n",
-RESET_SUCCESS[] = "File(s) unstaged successfully\n"
+RESET_SUCCESS[] = "File(s) unstaged successfully\n",
+RED_MINUS[] = "\033[0;31m-\033[0m",
+GREED_PLUS[] = "\033[0;32m+\033[0m",
+MODIFIED_COLOR[] = "\033[0;36mM\033[0m\n",
+ADDED_COLOR[] = "\033[0;32mA\033[0m\n",
+DELETED_COLOR[] = "\033[0;31mD\033[0m\n"
 ;
 
 // Paths

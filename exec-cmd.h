@@ -168,4 +168,17 @@ int exec_reset(int argc, char *argv[])
     return 1;
 }
 
+int exec_status(int argc, char *argv[])
+{
+    if ( !is_in_repo() ) {
+        printerr(NOT_REPO);
+        return 1;
+    }
+    if (argc > 2) {
+        printerr(INVALID_USAGE);
+        return 1;
+    }
+    show_file_status(find_root_path(), get_head_commit(), get_stage_object());
+}
+
 #endif

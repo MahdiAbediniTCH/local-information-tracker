@@ -154,6 +154,19 @@ int create_new_commit(int id, int parent_id, char* message, char* branch, char* 
     
 }
 
+int get_head_id()
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_repo_data());
+    int id;
+    FILE* head_f = fopen("states\\commits\\HEAD", "rb");
+    fread(&id, sizeof(int), 1, head_f);
+    fclose(head_f);
+    chdir(original_path);
+    return id;
+}
+
 State* get_head_commit()
 {
     char original_path[PATH_MAX];
@@ -221,6 +234,51 @@ int unstage_file(char* filename, State* stage_obj)
         }
         copy_file_attributes(stage_obj, get_head_commit(), relpath, true);
         return 0;
+    } else {
+        return 1;
+    }
+}
+// Return codes 0: success, 1: file not found, 2: already staged
+int show_file_status(char* filename, State* head_obj, State* stage_obj) 
+{
+    if ( file_exists(filename, true) ) { // Directory
+        char original_path[PATH_MAX];
+        getcwd(original_path, sizeof(original_path));
+        chdir(filename);
+
+        DIR* folder = opendir(".");
+        if (folder == NULL) return 1;
+        struct dirent* entry;
+        // Change working directory to the folder and keeping the original path
+        while ( (entry = readdir(folder)) != NULL ) {
+            if ( is_ignored(entry->d_name) ) continue;
+            show_file_status(entry->d_name, head_obj, stage_obj);
+        }
+        closedir(folder);
+        chdir(original_path);
+        return 0;
+    } else if ( file_exists(filename, false) ) { // File
+        char* relpath = file_relative_to_root(filename, find_root_path());
+        int f_ind = find_state_file(stage_obj, relpath);
+        enum Filestat stat_head = compare_wd_with_state(get_head_id(), relpath);
+        if (stat_head == S_UNCHANGED) return 1;
+
+        printf("~ %s: ", relpath);
+        if (f_ind > -1) {
+            enum Filestat stat = compare_wd_with_state(STAGE_ID, relpath);
+            if (stat == S_UNCHANGED) {
+                printf(GREED_PLUS);
+            } else {
+                printf(RED_MINUS);
+            }
+        } else {
+            printf(RED_MINUS);
+        }
+        if (stat_head == S_MODIFIED) printf(MODIFIED_COLOR);
+        if (stat_head == S_ADDED) printf(ADDED_COLOR);
+        if (stat_head == S_DELETED) printf(DELETED_COLOR);
+        return 0;
+        
     } else {
         return 1;
     }
