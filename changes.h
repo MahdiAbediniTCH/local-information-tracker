@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #include "file-util.h"
 #include "struct-state.h"
@@ -82,7 +83,7 @@ enum Filestat compare_wd_with_state(int state_id, char* relpath)
     if ( (sfile_ind == -1 || state->file_stat[sfile_ind] == S_DELETED) && wd_file != NULL ) {
         return S_ADDED;
     } else if ( (sfile_ind == -1 || state->file_stat[sfile_ind] == S_DELETED) && wd_file == NULL ) {
-        return 31; // idk again
+        return S_UNCHANGED; // idk again
     } else if ( sfile_ind > -1 && wd_file == NULL ) {
         return S_DELETED;
     } else {
@@ -131,6 +132,26 @@ int stage_file(char* filename, State* stage_obj)
     } else {
         return 1;
     }
+}
+
+int detect_deleted_files()
+{
+    State* stage = get_stage_object();
+    State* head = get_head_commit();
+    bool found = false;
+    for (int i = 0; i < head->n_files; i++) {
+        if (head->file_stat[i] == S_DELETED) continue;
+        char* relpath = head->tracked_files[i];
+        int s_ind = find_state_file(stage, relpath);
+        if (state.file_stat[s_ind] == S_DELETED) continue;
+        enum Filestat stat = compare_wd_with_state(head, relpath);
+        if (stat == S_DELETED) {
+            found = true;
+            delete_state_file(stage, relpath);
+            stage->file_stat[s_ind] = S_DELETED;
+        }
+    }
+    return found;
 }
 
 int print_stage_status(char* filename, State* stage_obj, int depth) 
@@ -299,7 +320,7 @@ int show_file_status(char* filename, State* head_obj, State* stage_obj)
         enum Filestat stat_head = compare_wd_with_state(get_head_id(), relpath);
         if (stat_head == S_UNCHANGED) return 1;
 
-        printf("~ %s: ", relpath);
+        printf("\t~ %s: ", relpath);
         if (f_ind > -1) {
             enum Filestat stat = compare_wd_with_state(STAGE_ID, relpath);
             if (stat == S_UNCHANGED) {
@@ -312,13 +333,36 @@ int show_file_status(char* filename, State* head_obj, State* stage_obj)
         }
         if (stat_head == S_MODIFIED) printf(MODIFIED_COLOR);
         if (stat_head == S_ADDED) printf(ADDED_COLOR);
-        if (stat_head == S_DELETED) printf(DELETED_COLOR);
+        if (stat_head == S_DELETED) printf(DELETED_COLOR); // This doesn't happen bruh
         return 0;
         
     } else {
         return 1;
     }
 }
+
+bool show_deleted_files()
+{
+    bool didprint = false;
+    State* head = get_head_commit();
+    for (int i = 0; i < head->n_files; i++) {
+        char* relpath = head->tracked_files[i];
+        enum Filestat stat = compare_wd_with_state(get_head_id(), relpath);
+        if (stat == S_DELETED) {
+            didprint = true;
+            printf("\t~ %s: ", relpath);
+            enum Filestat stat = compare_wd_with_state(STAGE_ID, relpath);
+            if (stat == S_UNCHANGED) {
+                printf(GREED_PLUS);
+            } else {
+                printf(RED_MINUS);
+            }
+            printf(DELETED_COLOR);
+        }
+    }
+    return didprint;
+}
+
 // TODO
 char* get_current_branch_name(char* branch)
 {

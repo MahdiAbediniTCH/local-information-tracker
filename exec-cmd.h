@@ -112,6 +112,11 @@ int exec_add(int argc, char *argv[])
             printf(FILEN_NOT_FOUND, argv[i]);
         }
     }
+    // Detect deleted files
+    if (detect_deleted_files()) {
+        printf("Detected file deletion compared to HEAD\n");
+    }
+    // Success message
     if (did_stage) {
         store_last_add_cmd(argc, argv);
         printf(STAGE_SUCCESS);
@@ -178,7 +183,10 @@ int exec_status(int argc, char *argv[])
         printerr(INVALID_USAGE);
         return 1;
     }
+    char branch[BRANCH_NAME_MAX];
+    printf(ON_BRANCH, get_current_branch_name(branch);
     show_file_status(find_root_path(), get_head_commit(), get_stage_object());
+    show_deleted_files();
 }
 
 int exec_commit(int argc, char *argv[])

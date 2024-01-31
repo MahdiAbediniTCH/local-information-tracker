@@ -249,7 +249,7 @@ int copy_state_file_from_wd(State* state, char* filename)
     return 0;
 }
 // Returns 1 upon success, 0 if the file is already deleted
-int delete_state_file(State* state, char* relpath)
+int delete_state_file(const State* state, char* relpath)
 {
     char original_path[PATH_MAX];
     getcwd(original_path, sizeof(original_path));
