@@ -140,7 +140,7 @@ int exec_reset(int argc, char *argv[])
                 return 1;
             }
             arg_ind++;
-            if ( execute_last_add_cmd() != 0 ) { // stfufufufufufu
+            if ( unstage_last_add() != 0 ) {
                 printerr("No last record was found\n");
             }
             return 0;
