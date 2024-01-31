@@ -85,7 +85,7 @@ int stage_file(char* filename, State* stage_obj)
         // Change working directory to the folder and keeping the original path
         while ( (entry = readdir(folder)) != NULL ) {
             if ( is_ignored(entry->d_name) ) continue;
-            returnval = returnval || !stage_file(entry->d_name, stage_obj);
+            returnval = !stage_file(entry->d_name, stage_obj) || returnval;
         }
         closedir(folder);
         chdir(original_path);
@@ -205,7 +205,7 @@ int unstage_file(char* filename, State* stage_obj)
         // Change working directory to the folder and keeping the original path
         while ( (entry = readdir(folder)) != NULL ) {
             if ( is_ignored(entry->d_name) ) continue;
-            returnval = returnval || !unstage_file(entry->d_name, stage_obj);
+            returnval = !unstage_file(entry->d_name, stage_obj) || returnval;
         }
         closedir(folder);
         chdir(original_path);
