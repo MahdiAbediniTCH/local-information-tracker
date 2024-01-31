@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H // Include guarding
 #define CONSTANTS_H
 // Allowed commands
-#define N_COMMANDS 5 // Number of allowed commands
+#define N_COMMANDS 6 // Number of allowed commands
 #define COMMAND_MAX 100 // Maximum length of a command
 const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "config", 
@@ -9,6 +9,7 @@ const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "add",
 "reset",
 "status", 
+"commit",
 };
 // User info
 #define USERNAME_MAX 30
@@ -31,6 +32,9 @@ INVALID_OPTION[] = "Invalid option\n",
 INVALID_COMMAND_FOR_ALIAS[] = "Invalid command used for alias\n",
 ALREADY_IN_REPOSITORY[] = "There is already a repository in current directory or parent directories\n",
 NOT_REPO[] = "Not a lit repository\n",
+MSG_TOO_LONG[] = "Commit message is too long\n",
+EXPECTED_MSG[] = "Expected a commit message\n",
+NOTHING_TO_COMMIT[] = "There is nothing to be committed (try lit add <file>)\n",
 // messages
 REPO_INIT_MESSAGE[] = "Initialized empty Git repository in %s\n",
 FILEN_NOT_FOUND[] = "Could not locate file %s\n",
@@ -38,12 +42,14 @@ STAGE_SUCCESS[] = "File(s) staged successfully\n",
 FILE_IS_STAGED_COLOR[] = "\033[0;32mStaged\033[0m\n",
 FILE_ISNT_STAGED_COLOR[] = "\033[0;33mNot staged\033[0m\n",
 FILE_IS_UNTRACKED_COLOR[] = "\033[0;31mUntracked\033[0m\n",
+FILE_IS_UNCHANGED_COLOR[] = "\033[0;35mUnchanged\033[0m\n",
 RESET_SUCCESS[] = "File(s) unstaged successfully\n",
 RED_MINUS[] = "\033[0;31m-\033[0m",
 GREED_PLUS[] = "\033[0;32m+\033[0m",
 MODIFIED_COLOR[] = "\033[0;36mM\033[0m\n",
 ADDED_COLOR[] = "\033[0;32mA\033[0m\n",
-DELETED_COLOR[] = "\033[0;31mD\033[0m\n"
+DELETED_COLOR[] = "\033[0;31mD\033[0m\n",
+COMMIT_SUCCESS[] = "Changes committed successfully\n"
 ;
 
 // Paths

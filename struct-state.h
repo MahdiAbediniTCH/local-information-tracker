@@ -358,6 +358,15 @@ int copy_only_file(const State* dest, const State* source, char* relpath)
     return 0;
 }
 
+int copy_all_files(State* to, State* from)
+{
+    for (int i = 0; i < from->n_files; i++) {
+        if (from->file_stat[i] == S_DELETED) continue;
+        copy_only_file(to, from, from->tracked_files[i]);
+    }
+    return 0;
+}
+
 // Also copies the file, 1: deleted the file to match, 0: matched the file data
 int copy_file_attributes(State* dest, const State* source, char* relpath, bool is_stage)
 {
@@ -378,12 +387,13 @@ int copy_file_attributes(State* dest, const State* source, char* relpath, bool i
             dest->file_stat[ind_dest] = S_UNCHANGED;
         }
     }
-    // not sure about the below condition
     if (source->file_stat[ind_source] != S_DELETED) {
         copy_only_file(dest, source, relpath);
     // TODO: Maybe it's necessary to keep the old versions
     } else {
+        // not sure about this
         delete_state_file(dest, relpath);
+        remove_file_from_state_data(dest, relpath);
     }
     return 0;
 }

@@ -14,6 +14,8 @@
 
 // Function prototypes because of bad source management
 int create_root_commit();
+int change_head(int);
+int create_stage();
 
 // search in current dir and parents
 char* find_root_path()

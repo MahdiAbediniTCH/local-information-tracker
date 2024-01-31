@@ -181,4 +181,35 @@ int exec_status(int argc, char *argv[])
     show_file_status(find_root_path(), get_head_commit(), get_stage_object());
 }
 
+int exec_commit(int argc, char *argv[])
+{
+    if ( !is_in_repo() ) {
+        printerr(NOT_REPO);
+        return 1;
+    } if (argc < 3) {
+        printerr(INVALID_USAGE);
+        return 1;
+    } if (strcmp(argv[2], "-m") != 0) {
+        printerr(INVALID_USAGE);
+        return 1;
+    } if (argc < 4) {
+        printerr(EXPECTED_MSG);
+        return 1;
+    } if (argc != 4) {
+        printerr(INVALID_USAGE);
+        return 1;
+    } if (strlen(argv[3]) > COMMIT_MESSAGE_MAX) {
+        printerr(MSG_TOO_LONG);
+        return 1;
+    }
+    int result = do_a_commit(argv[3]);
+    if (result == 0) {
+        printf(COMMIT_SUCCESS);
+        return 0;
+    } else if (result == 1) {
+        printerr(NOTHING_TO_COMMIT);
+        return 1;
+    }
+}
+
 #endif

@@ -22,6 +22,30 @@ State* get_stage_object()
     return read_state(".lit\\states\\stage");
 }
 
+int last_commit_id()
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_repo_data());;
+    //
+    DIR* folder = opendir("states\\commits");
+    if (folder == NULL) return 1;
+    struct dirent* entry;
+    int max_id = 0x0f;
+    // Change working directory to the folder and keeping the original path
+    while ( (entry = readdir(folder)) != NULL ) {
+        if ( is_ignored(entry->d_name) ) continue;
+        if (entry->d_type == DT_DIR) {
+            int id = atoi(entry->d_name);
+            max_id = (id > max_id) ? id : max_id;
+        }
+    }
+    closedir(folder);
+    //
+    chdir(original_path);
+    return max_id;
+}
+
 enum Filestat calculate_new_state(int prior_id, int latter_id, char* relpath)
 {
     State* prior = get_state_by_id(prior_id);
@@ -133,11 +157,15 @@ int print_stage_status(char* filename, State* stage_obj, int depth)
         int f_ind = find_state_file(stage_obj, relpath);
         printf("- %s: ", relpath);
         if (f_ind > -1) {
-            enum Filestat stat = compare_wd_with_state(STAGE_ID, relpath);
-            if (stat == S_UNCHANGED) {
-                printf(FILE_IS_STAGED_COLOR);
+            if (stage_obj->file_stat[f_ind] == S_UNCHANGED) {
+                printf(FILE_IS_UNCHANGED_COLOR);
             } else {
-                printf(FILE_ISNT_STAGED_COLOR);
+                enum Filestat stat = compare_wd_with_state(STAGE_ID, relpath);
+                if (stat == S_UNCHANGED) {
+                    printf(FILE_IS_STAGED_COLOR);
+                } else {
+                    printf(FILE_ISNT_STAGED_COLOR);
+                }
             }
         } else {
             printf(FILE_IS_UNTRACKED_COLOR);
@@ -194,11 +222,18 @@ int change_head(int head_id)
 
 int create_stage()
 {
-    State* stage = inherit_state(get_head_commit(), STAGE_ID);
-    for (int i = 0; i < stage->n_files; i++) {
+    State* head = get_head_commit();
+    State* stage = inherit_state(head, STAGE_ID);
+    int ind = 0;
+    for (int i = 0; i < head->n_files; i++) {
         enum Filestat stat = stage->file_stat[i];
-        if (stat != S_DELETED) stage->file_stat[i] = S_UNCHANGED;
+        if (stat != S_DELETED) {
+            strcpy(stage->tracked_files[ind], head->tracked_files[i]);
+            stage->file_stat[ind] = S_UNCHANGED;
+            ind++;
+        }
     }
+    stage->n_files = ind;
     write_state(stage, stage->data_dir);
     update_all_state_files(stage);
 } 
@@ -282,6 +317,37 @@ int show_file_status(char* filename, State* head_obj, State* stage_obj)
     } else {
         return 1;
     }
+}
+// TODO
+char* get_current_branch_name(char* branch)
+{
+    strcpy(branch, "master");
+    return branch;
+}
+
+bool is_stage_empty()
+{
+    State* stage = get_stage_object();
+    for (int i = 0; i < stage->n_files; i++) {
+        if (stage->file_stat[i] != S_UNCHANGED)
+            return false;
+    }
+    return true;
+}
+
+int do_a_commit(char* message)
+{
+    if (is_stage_empty()) return 1;
+    State* stage = get_stage_object();
+    State* commit = inherit_state(stage, last_commit_id() + 1);
+    strcpy(commit->message, message);
+    get_current_branch_name(commit->branch_name);
+    commit->parent_id = get_head_id();
+    write_state(commit, commit->data_dir);
+    copy_all_files(commit, stage);
+    change_head(commit->state_id);
+    create_stage();
+    return 0;
 }
 
 #endif // CHANGES_H
