@@ -61,6 +61,18 @@ State* get_head_commit()
     return get_state_by_id(id);
 }
 
+int get_head_id()
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_repo_data());
+    int id;
+    FILE* head_f = fopen("states\\commits\\HEAD", "rb");
+    fread(&id, sizeof(int), 1, head_f);
+    fclose(head_f);
+    chdir(original_path);
+    return id;
+}
 
 enum Filestat calculate_new_state(int prior_id, int latter_id, char* relpath)
 {
@@ -97,7 +109,7 @@ enum Filestat compare_wd_with_state(int state_id, char* relpath)
     if ( (sfile_ind == -1 || state->file_stat[sfile_ind] == S_DELETED) && wd_file != NULL ) {
         return S_ADDED;
     } else if ( (sfile_ind == -1 || state->file_stat[sfile_ind] == S_DELETED) && wd_file == NULL ) {
-        return S_UNCHANGED; // idk again
+        return S_UNCHANGED; // Special case, be careful
     } else if ( sfile_ind > -1 && wd_file == NULL ) {
         return S_DELETED;
     } else {
@@ -155,12 +167,15 @@ int detect_deleted_files()
         char* relpath = head->tracked_files[i];
         int s_ind = find_state_file(stage, relpath);
         if (stage->file_stat[s_ind] == S_DELETED) continue;
-        enum Filestat stat = compare_wd_with_state(head, relpath);
+        enum Filestat stat = compare_wd_with_state(head->state_id, relpath);
         if (stat == S_DELETED) {
             found = true;
             delete_state_file(stage, relpath);
             stage->file_stat[s_ind] = S_DELETED;
         }
+    }
+    if (found) {
+        write_state(stage, stage->data_dir);
     }
     return found;
 }
@@ -190,15 +205,15 @@ int print_stage_status(char* filename, State* stage_obj, int depth)
         int f_ind = find_state_file(stage_obj, relpath);
         printf("- %s: ", relpath);
         if (f_ind > -1) {
-            if (stage_obj->file_stat[f_ind] == S_UNCHANGED) {
-                printf(FILE_IS_UNCHANGED_COLOR);
-            } else {
-                enum Filestat stat = compare_wd_with_state(STAGE_ID, relpath);
-                if (stat == S_UNCHANGED) {
-                    printf(FILE_IS_STAGED_COLOR);
+            enum Filestat stat = compare_wd_with_state(STAGE_ID, relpath);
+            if (stat == S_UNCHANGED) {
+                if (compare_wd_with_state(get_head_id(), relpath) == S_UNCHANGED) {
+                    printf(FILE_IS_UNCHANGED_COLOR);
                 } else {
-                    printf(FILE_ISNT_STAGED_COLOR);
+                    printf(FILE_IS_STAGED_COLOR);
                 }
+            } else {
+                printf(FILE_ISNT_STAGED_COLOR);
             }
         } else {
             printf(FILE_IS_UNTRACKED_COLOR);
@@ -207,19 +222,6 @@ int print_stage_status(char* filename, State* stage_obj, int depth)
     } else {
         return 1;
     }
-}
-
-int get_head_id()
-{
-    char original_path[PATH_MAX];
-    getcwd(original_path, sizeof(original_path));
-    chdir(find_repo_data());
-    int id;
-    FILE* head_f = fopen("states\\commits\\HEAD", "rb");
-    fread(&id, sizeof(int), 1, head_f);
-    fclose(head_f);
-    chdir(original_path);
-    return id;
 }
 
 int change_head(int head_id)

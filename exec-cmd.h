@@ -101,9 +101,9 @@ int exec_add(int argc, char *argv[])
     }
     // TODO: did_stage doesn't get the good result from the function
     bool did_stage = false;
+    State* stage_obj = get_stage_object();
     for (int i = arg_ind; i < argc; i++) {
         // TODO: Later implement deleting files that were staged before
-        State* stage_obj = get_stage_object();
         int return_status = stage_file(argv[i], stage_obj);
         write_state(stage_obj, stage_obj->data_dir);
         if (!return_status) {

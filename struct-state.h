@@ -10,10 +10,6 @@
 #include "data.h"
 #include "constants.h"
 
-// Function prototypes because of bad source management
-char* find_root_path();
-int get_author_name(char*);
-int get_author_email(char*);
 
 
 enum Filestat{
@@ -36,6 +32,13 @@ typedef struct State {
     enum Filestat file_stat[MAX_TRACKED_FILES];
     char data_dir[PATH_MAX]; // relative to the root of the repo
 } State;
+
+// Function prototypes because of bad source management
+char* find_root_path();
+int get_author_name(char*);
+int get_author_email(char*);
+int delete_state_file(const State*, char*);
+
 
 State* initialize_state(int id, int parent_id, char* message, char* branch, char* name, char* email, char* data_dir) // TODO: decide about the arguments
 {
@@ -186,7 +189,7 @@ int update_all_state_files(State* state)
 }
 
 // Returns the index, returns -1 if not found
-int find_state_file(State* state, char* filename) // Relative to root without .
+int find_state_file(const State* state, char* filename) // Relative to root without .
 {
     // TODO: If it's necessary, make sure to change filename to the correct relative form
     for (int i = 0; i < state->n_files; i++) {
