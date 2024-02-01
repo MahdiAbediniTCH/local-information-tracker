@@ -5,6 +5,7 @@
 #include "data.h"
 #include "changes.h"
 #include "action-history.h"
+#include "msg-shortcuts.h"
 
 int exec_config(int argc, char *argv[])
 {
@@ -198,26 +199,100 @@ int exec_commit(int argc, char *argv[])
     } if (argc < 3) {
         printerr(INVALID_USAGE);
         return 1;
-    } if (strcmp(argv[2], "-m") != 0) {
-        printerr(INVALID_USAGE);
-        return 1;
-    } if (argc < 4) {
-        printerr(EXPECTED_MSG);
-        return 1;
-    } if (argc != 4) {
-        printerr(INVALID_USAGE);
-        return 1;
-    } if (strlen(argv[3]) > COMMIT_MESSAGE_MAX) {
-        printerr(MSG_TOO_LONG);
+    } 
+    State* commit = NULL;
+    int arg_ind = 2;
+    if (argv[arg_ind][0] == '-') {
+        if ( strcmp(argv[arg_ind] + 1, "m") == 0 ) {
+            if (argc < 4) {
+                printerr(EXPECTED_MSG);
+                return 1;
+            } if (argc != 4) {
+                printerr(INVALID_USAGE);
+                return 1;
+            } if (strlen(argv[3]) > COMMIT_MESSAGE_MAX) {
+                printerr(MSG_TOO_LONG);
+                return 1;
+            }
+            commit = do_a_commit(argv[3]);
+
+        } else if ( strcmp(argv[arg_ind] + 1, "s") == 0 ) {
+            if (argc < 4) {
+                printerr(EXPECTED_SHORTCUT);
+                return 1;
+            } if (argc != 4) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            char message[COMMIT_MESSAGE_MAX + 1];
+            if ( !get_message_from_shortcut(message, argv[3]) ) {
+                printf(SHORTCUT_NOT_FOUND, argv[3]);
+                return 1;
+            }
+            commit = do_a_commit(message);
+
+        } else {
+            printerr(INVALID_OPTION);
+            return 1;
+        }
+    } else {
+        printerr(OPTION_REQUIRED);
         return 1;
     }
-    State* commit = do_a_commit(argv[3]);
     if (commit != NULL) {
-        printf(COMMIT_SUCCESS, commit->state_id, ctime(&(commit->time_created)));
+        printf(COMMIT_SUCCESS, commit->state_id, ctime(&(commit->time_created)), commit->message);
         return 0;
     } else {
         printerr(NOTHING_TO_COMMIT);
         return 1;
+    }
+}
+
+int exec_set(int argc, char* argv[])
+{
+    if ( !is_in_repo() ) {
+        printerr(NOT_REPO);
+        return 1;
+    } if (argc != 6) {
+        printerr(INVALID_USAGE);
+        return 1;
+    }
+    int arg_ind = 2;
+    char shortcut[SHORTCUT_MAX] = "";
+    char message[COMMIT_MESSAGE_MAX] = "";
+
+    for (int i = 0; i < 2; i++) {
+        if (argv[arg_ind][0] == '-') {
+            if ( strcmp(argv[arg_ind] + 1, "m") == 0 ) {
+                arg_ind++;
+                strcpy(message, argv[arg_ind]);
+                if (strlen(message) > COMMIT_MESSAGE_MAX) {
+                    printerr(MSG_TOO_LONG);
+                    return 1;
+                }
+            } else if ( strcmp(argv[arg_ind] + 1, "s") == 0 ) {
+                arg_ind++;
+                strcpy(shortcut, argv[arg_ind]);
+            } else {
+                printerr(INVALID_OPTION);
+                return 1;
+            }
+        } else {
+            printerr(OPTION_REQUIRED);
+            return 1;
+        }
+        arg_ind++;
+    }
+    if (strlen(shortcut) == 0 || strlen(message) == 0) {
+        printerr(INVALID_USAGE);
+        return 1;
+    }
+    if ( !add_new_shortcut(shortcut, message) ) {
+        printf(SHORTCUT_ALREADY_EXISTS, shortcut);
+        return 1;
+    } else {
+        printf(SHORTCUT_ADD_SUCCESS, shortcut);
+        return 0;
     }
 }
 

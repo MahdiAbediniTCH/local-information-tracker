@@ -3,7 +3,7 @@
 #include "data.h"
 #include "struct-state.h"
 #include <time.h>
-
+#include "msg-shortcuts.h"
 void debug_state(State* state)
 {
     printf("ID: %x\nTime: %sMessage: %s\nBranch: %s\nAuthor name: %s\nAuthor email: %s\nn_files: %d\nData path: %s\n",
@@ -17,6 +17,8 @@ void debug_state(State* state)
 }
 
 int main() {
-    printf("%d", last_commit_id());
-    
+    char na[232];
+    get_author_name(na);
+    printf(na);
+
 }

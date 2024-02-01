@@ -53,8 +53,8 @@ bool is_in_repo()
 char* get_config_path(bool is_global) 
 {
     char* confpath;
+    confpath = (char*) malloc(PATH_MAX * sizeof(char));
     if (is_global) {
-        confpath = (char*) malloc(PATH_MAX * sizeof(char));
         strcpy(confpath, CONFIG_PATH);
     } else {
         confpath = find_repo_data();
@@ -104,6 +104,8 @@ int config_user(char* setting, char* data, int is_global)
     // Keeping the other one
     char *email = (char*) malloc(EMAIL_MAX * sizeof(char));
     char *name = (char*) malloc(USERNAME_MAX * sizeof(char));
+    email[0] = '\0';
+    name[0] = '\0';
     fgets(name, USERNAME_MAX, f_user);
     fgets(email, EMAIL_MAX, f_user);
     name[strcspn(name, "\n\r")] = '\0'; // fgets will include line break at the end of the string
@@ -134,11 +136,13 @@ int get_author_name(char* name)
     // Keeping the other one
     bool undefined_local = false;
     if ( fgets(name, USERNAME_MAX, f_user) == NULL ) undefined_local = true;
+    if ( strlen(name) < 2 ) undefined_local = true;
     if ( undefined_local ) {
         char* filename_glob = get_config_path(true);
         strcat(filename_glob, "\\user.txt");
-        FILE* f_user_glob = fopen(filename, "r");
+        FILE* f_user_glob = fopen(filename_glob, "r");
         fgets(name, USERNAME_MAX, f_user_glob);
+        fclose(f_user_glob);
     }
     name[strcspn(name, "\n\r")] = '\0';
     fclose(f_user);
@@ -152,14 +156,16 @@ int get_author_email(char* email)
     FILE* f_user = fopen(filename, "r");
     // Keeping the other one
     bool undefined_local = false;
-    if ( fgets(email, EMAIL_MAX, f_user) == NULL ) undefined_local = true;
+    if ( fgets(email, EMAIL_MAX, f_user) == NULL ) ;
     if ( fgets(email, EMAIL_MAX, f_user) == NULL ) undefined_local = true; // (email is on the second line)
+    if ( strlen(email) < 2 ) undefined_local = true;
     if ( undefined_local ) {
         char* filename_glob = get_config_path(true);
         strcat(filename_glob, "\\user.txt");
-        FILE* f_user_glob = fopen(filename, "r");
+        FILE* f_user_glob = fopen(filename_glob, "r");
         fgets(email, EMAIL_MAX, f_user_glob);
         fgets(email, EMAIL_MAX, f_user_glob);
+        fclose(f_user_glob);
     }
     email[strcspn(email, "\n\r")] = '\0';
     fclose(f_user);
