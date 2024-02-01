@@ -250,10 +250,51 @@ int exec_commit(int argc, char *argv[])
 
 int exec_set(int argc, char* argv[])
 {
-    if ( !is_in_repo() ) {
-        printerr(NOT_REPO);
+    if (argc != 6) {
+        printerr(INVALID_USAGE);
         return 1;
-    } if (argc != 6) {
+    }
+    int arg_ind = 2;
+    char shortcut[SHORTCUT_MAX] = "";
+    char message[COMMIT_MESSAGE_MAX] = "";
+
+    for (int i = 0; i < 2; i++) {
+        if (argv[arg_ind][0] == '-') {
+            if ( strcmp(argv[arg_ind] + 1, "m") == 0 ) {
+                arg_ind++;
+                strcpy(message, argv[arg_ind]);
+                if (strlen(message) > COMMIT_MESSAGE_MAX) {
+                    printerr(MSG_TOO_LONG);
+                    return 1;
+                }
+            } else if ( strcmp(argv[arg_ind] + 1, "s") == 0 ) {
+                arg_ind++;
+                strcpy(shortcut, argv[arg_ind]);
+            } else {
+                printerr(INVALID_OPTION);
+                return 1;
+            }
+        } else {
+            printerr(OPTION_REQUIRED);
+            return 1;
+        }
+        arg_ind++;
+    }
+    if ( strlen(shortcut) == 0 || strlen(message) == 0 ) {
+        printerr(INVALID_USAGE);
+        return 1;
+    } if ( !add_new_shortcut(shortcut, message) ) {
+        printf(SHORTCUT_ALREADY_EXISTS, shortcut);
+        return 1;
+    } else {
+        printf(SHORTCUT_ADD_SUCCESS, shortcut);
+        return 0;
+    }
+}
+
+int exec_replace(int argc, char* argv[])
+{
+    if (argc != 6) {
         printerr(INVALID_USAGE);
         return 1;
     }
@@ -287,11 +328,11 @@ int exec_set(int argc, char* argv[])
         printerr(INVALID_USAGE);
         return 1;
     }
-    if ( !add_new_shortcut(shortcut, message) ) {
-        printf(SHORTCUT_ALREADY_EXISTS, shortcut);
+    if ( !replace_shortcut(shortcut, message) ) {
+        printf(SHORTCUT_NOT_FOUND, shortcut);
         return 1;
     } else {
-        printf(SHORTCUT_ADD_SUCCESS, shortcut);
+        printf(SHORTCUT_REPLACE_SUCCESS, shortcut);
         return 0;
     }
 }
