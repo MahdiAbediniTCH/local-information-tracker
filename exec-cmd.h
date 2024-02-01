@@ -337,4 +337,39 @@ int exec_replace(int argc, char* argv[])
     }
 }
 
+int exec_remove(int argc, char *argv[])
+{
+    if (argc < 3) {
+        printerr(INVALID_USAGE);
+        return 1;
+    } 
+    State* commit = NULL;
+    int arg_ind = 2;
+    if (argv[arg_ind][0] == '-') {
+        if ( strcmp(argv[arg_ind] + 1, "s") == 0 ) {
+            if (argc < 4) {
+                printerr(EXPECTED_SHORTCUT);
+                return 1;
+            } if (argc != 4) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+        } else {
+            printerr(INVALID_OPTION);
+            return 1;
+        }
+    } else {
+        printerr(OPTION_REQUIRED);
+        return 1;
+    }
+    char* shortcut = argv[3];
+    if ( remove_shortcut(shortcut) ) {
+        printf(SHORTCUT_REMOVE_SUCCESS, shortcut);
+        return 0;
+    } else {
+        printf(SHORTCUT_NOT_FOUND, shortcut);
+        return 1;
+    }
+}
+
 #endif
