@@ -405,8 +405,7 @@ int exec_log(int argc, char *argv[])
                 return 1;
             }
             arg_ind++;
-
-
+            print_branch_commits(argv[arg_ind]);
             return 0;
         } else if ( strcmp(argv[arg_ind] + 1, "author") == 0 ) {
             if ( argc != 4) {
@@ -414,8 +413,7 @@ int exec_log(int argc, char *argv[])
                 return 1;
             }
             arg_ind++;
-
-
+            print_author_commits(argv[arg_ind]);
             return 0;
         } else if ( strcmp(argv[arg_ind] + 1, "since") == 0 ) {
             if ( argc != 4) {
@@ -423,7 +421,10 @@ int exec_log(int argc, char *argv[])
                 return 1;
             }
             arg_ind++;
-
+            if ( !print_commits_since(argv[arg_ind]) ) {
+                printerr(INVALID_TIME_FORMAT);
+                return 1;
+            }
 
             return 0;
         } else if ( strcmp(argv[arg_ind] + 1, "before") == 0 ) {
@@ -435,13 +436,13 @@ int exec_log(int argc, char *argv[])
 
 
             return 0;
-        } else if ( strcmp(argv[arg_ind] + 1, "before") == 0 ) {
+        } else if ( strcmp(argv[arg_ind] + 1, "search") == 0 ) {
             if ( argc != 4) {
                 printerr(INVALID_USAGE);
                 return 1;
             }
             arg_ind++;
-
+            
 
             return 0;
         } else {
