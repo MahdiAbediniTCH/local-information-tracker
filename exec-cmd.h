@@ -390,8 +390,14 @@ int exec_log(int argc, char *argv[])
             if (argc != 4) {
                 printerr(INVALID_USAGE);
                 return 1;
-            }
+            } 
             arg_ind++;
+            int n = atoi(argv[arg_ind]);
+            if (n < 1) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            print_n_last_commits(n);
             return 0;
         } else if ( strcmp(argv[arg_ind] + 1, "branch") == 0 ) {
             if ( argc != 4) {
