@@ -16,6 +16,9 @@
 int create_root_commit();
 int change_head(int);
 int create_stage();
+int create_new_branch(char* branch);
+int switch_branch(char* branch);
+
 
 // search in current dir and parents
 char* find_root_path()
@@ -262,12 +265,16 @@ int initialize_repo()
     chdir("..");
 
     mkdir("commits");
-    
+    chdir("..");
+    mkdir("branch");
+
     // commits
     create_root_commit();
     change_head(ROOT_ID);
     create_stage();
-    chdir("..\\.."); // Go back to the original path
+    create_new_branch("master");
+    switch_branch("master");
+    chdir(".."); // Go back to the original path
     return 0;
 }
 

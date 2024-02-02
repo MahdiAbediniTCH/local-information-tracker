@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H // Include guarding
 #define CONSTANTS_H
 // Allowed commands
-#define N_COMMANDS 10 // Number of allowed commands
+#define N_COMMANDS 11 // Number of allowed commands
 #define COMMAND_MAX 100 // Maximum length of a command
 const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "config", 
@@ -14,6 +14,7 @@ const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "replace",
 "remove",
 "log",
+"branch",
 };
 // User info
 #define USERNAME_MAX 30
@@ -35,7 +36,7 @@ INVALID_USAGE[] = "Invalid usage\n",
 INVALID_OPTION[] = "Invalid option\n",
 INVALID_COMMAND_FOR_ALIAS[] = "Invalid command used for alias\n",
 ALREADY_IN_REPOSITORY[] = "There is already a repository in current directory or parent directories\n",
-NOT_REPO[] = "Not a lit repository\n",
+NOT_REPO[] = "Not a Lit repository\n",
 MSG_TOO_LONG[] = "Commit message is too long\n",
 EXPECTED_MSG[] = "Expected a commit message\n",
 EXPECTED_SHORTCUT[] = "Expected a commit message shortcut\n",
@@ -43,6 +44,7 @@ NOTHING_TO_COMMIT[] = "There is nothing to be committed (try lit add <file>)\n",
 OPTION_REQUIRED[] = "An option is required for this command\n",
 INVALID_TIME_FORMAT[] = "Invalid time format. Try using YYYY/MM/DD HH:mm\n",
 NO_MESSAGES_FOUND[] = "No commit messages were found matching the given word\n",
+BRANCH_EXISTS[] = "Branch already exists\n",
 
 SHORTCUT_NOT_FOUND[] = "\033[0;31mCouldn't locate shortcut key \"%s\"\033[0m\n",
 SHORTCUT_ALREADY_EXISTS[] = "\033[0;31mShortcut key \"%s\" already exists\033[0m\n",
@@ -62,10 +64,12 @@ MODIFIED_COLOR[] = "\033[0;36mM\033[0m\n",
 ADDED_COLOR[] = "\033[0;32mA\033[0m\n",
 DELETED_COLOR[] = "\033[0;31mD\033[0m\n",
 COMMIT_SUCCESS[] = "Changes committed successfully \nCommit id: \033[0;36m%x\033[0m \nTime created: \033[0;34m%s\033[0m \nMessage: \033[0;33m%s\033[0m\n",
-ON_BRANCH[] = "On branch \033[1;32m%s\033[0m\n\n",
+ON_BRANCH[] = "On branch \033[1;32m%s\033[0m\n",
+BRANCH_PRINT_FORMAT[] = "\033[1;32m%s\033[0m",
 SHORTCUT_ADD_SUCCESS[] = "Shortcut \"%s\" added successfully\n",
 SHORTCUT_REPLACE_SUCCESS[] = "Shortcut \"%s\" replaced successfully\n",
 SHORTCUT_REMOVE_SUCCESS[] = "Shortcut \"%s\" removed successfully\n",
+BRANCH_CREATE_SUCCESS[] = "Created new branch \"%s\" on HEAD(%x)\n",
 
 LOG_FORMAT[] = "Commit \033[0;36m%x\033[0m \nBranch: \033[1;32m%s\033[0m \nAuthor: %s <%s> \nDate: \033[0;34m%s\033[0mNumber of changes: %d \nMessage: \033[0;33m%s\033[0m\n\n"
 ;
@@ -90,5 +94,5 @@ LOG_FORMAT[] = "Commit \033[0;36m%x\033[0m \nBranch: \033[1;32m%s\033[0m \nAutho
 #define MAX_LINE_LENGTH 300
 
 // Usage text
-const char USAGE[] = "usage: lit <command> [<args>]\n";
+const char USAGE[] = "Usage: lit <command> [<args>]\n";
 #endif // CONSTANTS_H

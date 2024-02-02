@@ -252,6 +252,7 @@ int create_stage()
     stage->n_files = ind;
     write_state(stage, stage->data_dir);
     update_all_state_files(stage);
+    return 0;
 } 
 
 // Return codes 0: success, 1: file not found, 2: already staged
@@ -351,11 +352,103 @@ bool show_deleted_files()
     return didprint;
 }
 
-// TODO
 char* get_current_branch_name(char* branch)
 {
-    strcpy(branch, "master");
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_repo_data());
+    //
+    FILE* file = fopen("branch\\current-branch.txt", "r");
+    fgets(branch, BRANCH_NAME_MAX, file);
+    fclose(file);
+    //
+    chdir(original_path);
     return branch;
+}
+// Returns -1 upon failure
+int get_branch_commit_id(char* branch)
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_repo_data());
+    chdir("branch");
+    //
+    DIR* branchdir = opendir(".");
+    if (branchdir == NULL) return 1;
+    struct dirent* entry;
+    int commit_id = -1;
+    while ( (entry = readdir(branchdir)) != NULL ) {
+        if (entry->d_type != DT_REG || (strcmp(entry->d_name, "current-branch.txt") == 0)) continue;
+        if ( strcmp(branch, entry->d_name) == 0 ) {
+            FILE* branch = fopen(entry->d_name, "rb");
+            fread(&commit_id, sizeof(int), 1, branch);
+            fclose(branch);
+            break;
+        }
+    }
+    closedir(branchdir);
+    //
+    chdir(original_path);
+    return commit_id;
+}
+
+int create_new_branch(char* branch)
+{
+    if (get_branch_commit_id(branch) != -1) return 1;
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_repo_data());
+    chdir("branch");
+    //
+    FILE* br_file = fopen(branch, "wb");
+    int head_id = get_head_id();
+    fwrite(&head_id, sizeof(int), 1, br_file);
+    fclose(br_file);
+    //
+    chdir(original_path);
+    return 0;
+}
+// Returns branch commit id
+int switch_branch(char* branch)
+{
+    int commit_id = get_branch_commit_id(branch);
+    if (commit_id == -1) return -1;
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_repo_data());
+    chdir("branch");
+    //
+    FILE* file = fopen("current-branch.txt", "w");
+    fputs(branch, file);
+    fclose(file);
+    //
+    chdir(original_path);
+    return commit_id;
+}
+
+int show_all_branches()
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_repo_data());
+    chdir("branch");
+    //
+    char current_branch[BRANCH_NAME_MAX];
+    get_current_branch_name(current_branch);
+    DIR* branchdir = opendir(".");
+    if (branchdir == NULL) return 1;
+    struct dirent* entry;
+    while ( (entry = readdir(branchdir)) != NULL ) {
+        if (entry->d_type != DT_REG || strcmp(entry->d_name, "current-branch.txt") == 0) continue;
+        printf(BRANCH_PRINT_FORMAT, entry->d_name);
+        if ( strcmp(current_branch, entry->d_name) == 0 )
+            printf(" *");
+        printf("\n");
+    }
+    closedir(branchdir);
+    //
+    chdir(original_path);
+    return 0;
 }
 
 bool is_stage_empty()
