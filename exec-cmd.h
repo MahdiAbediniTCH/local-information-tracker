@@ -445,9 +445,13 @@ int exec_log(int argc, char *argv[])
                 return 1;
             }
             arg_ind++;
-            
-
+            // TOOD: multiple words support
+            if ( !print_message_commits(argv[arg_ind]) ) {
+                printerr(NO_MESSAGES_FOUND);
+                return 1;
+            }
             return 0;
+
         } else {
             printerr(INVALID_OPTION);
             return 1;

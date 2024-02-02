@@ -42,6 +42,7 @@ EXPECTED_SHORTCUT[] = "Expected a commit message shortcut\n",
 NOTHING_TO_COMMIT[] = "There is nothing to be committed (try lit add <file>)\n",
 OPTION_REQUIRED[] = "An option is required for this command\n",
 INVALID_TIME_FORMAT[] = "Invalid time format. Try using YYYY/MM/DD HH:mm\n",
+NO_MESSAGES_FOUND[] = "No commit messages were found matching the given word\n",
 
 SHORTCUT_NOT_FOUND[] = "\033[0;31mCouldn't locate shortcut key \"%s\"\033[0m\n",
 SHORTCUT_ALREADY_EXISTS[] = "\033[0;31mShortcut key \"%s\" already exists\033[0m\n",
