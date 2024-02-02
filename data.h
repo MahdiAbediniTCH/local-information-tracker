@@ -156,7 +156,7 @@ int get_author_email(char* email)
     FILE* f_user = fopen(filename, "r");
     // Keeping the other one
     bool undefined_local = false;
-    if ( fgets(email, EMAIL_MAX, f_user) == NULL ) ;
+    if ( fgets(email, EMAIL_MAX, f_user) == NULL ) {};
     if ( fgets(email, EMAIL_MAX, f_user) == NULL ) undefined_local = true; // (email is on the second line)
     if ( strlen(email) < 2 ) undefined_local = true;
     if ( undefined_local ) {

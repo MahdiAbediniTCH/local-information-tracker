@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H // Include guarding
 #define CONSTANTS_H
 // Allowed commands
-#define N_COMMANDS 9 // Number of allowed commands
+#define N_COMMANDS 10 // Number of allowed commands
 #define COMMAND_MAX 100 // Maximum length of a command
 const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "config", 
@@ -13,6 +13,7 @@ const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "set",
 "replace",
 "remove",
+"log",
 };
 // User info
 #define USERNAME_MAX 30
@@ -62,7 +63,9 @@ COMMIT_SUCCESS[] = "Changes committed successfully \nCommit id: \033[0;36m%x\033
 ON_BRANCH[] = "On branch \033[1;32m%s\033[0m\n\n",
 SHORTCUT_ADD_SUCCESS[] = "Shortcut \"%s\" added successfully\n",
 SHORTCUT_REPLACE_SUCCESS[] = "Shortcut \"%s\" replaced successfully\n",
-SHORTCUT_REMOVE_SUCCESS[] = "Shortcut \"%s\" removed successfully\n"
+SHORTCUT_REMOVE_SUCCESS[] = "Shortcut \"%s\" removed successfully\n",
+
+LOG_FORMAT[] = "Commit \033[0;36m%x\033[0m \nBranch: \033[1;32m%s\033[0m \nAuthor: %s <%s> \nDate: \033[0;34m%s\033[0mNumber of changes: %d \nMessage: \033[0;33m%s\033[0m\n\n"
 ;
 
 // Paths

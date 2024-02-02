@@ -6,6 +6,7 @@
 #include "changes.h"
 #include "action-history.h"
 #include "msg-shortcuts.h"
+#include "log.h"
 
 int exec_config(int argc, char *argv[])
 {
@@ -368,6 +369,81 @@ int exec_remove(int argc, char *argv[])
         return 0;
     } else {
         printf(SHORTCUT_NOT_FOUND, shortcut);
+        return 1;
+    }
+}
+
+int exec_log(int argc, char *argv[])
+{
+    if ( !is_in_repo() ) {
+        printerr(NOT_REPO);
+        return 1;
+    }
+    if (argc == 2) { // Log all
+        print_all_commits();
+        return 0;
+    }
+    int arg_ind = 2;
+    if (argv[arg_ind][0] == '-') {
+
+        if ( strcmp(argv[arg_ind] + 1, "n") == 0 ) {
+            if (argc != 4) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            arg_ind++;
+            return 0;
+        } else if ( strcmp(argv[arg_ind] + 1, "branch") == 0 ) {
+            if ( argc != 4) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            arg_ind++;
+
+
+            return 0;
+        } else if ( strcmp(argv[arg_ind] + 1, "author") == 0 ) {
+            if ( argc != 4) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            arg_ind++;
+
+
+            return 0;
+        } else if ( strcmp(argv[arg_ind] + 1, "since") == 0 ) {
+            if ( argc != 4) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            arg_ind++;
+
+
+            return 0;
+        } else if ( strcmp(argv[arg_ind] + 1, "before") == 0 ) {
+            if ( argc != 4) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            arg_ind++;
+
+
+            return 0;
+        } else if ( strcmp(argv[arg_ind] + 1, "before") == 0 ) {
+            if ( argc != 4) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            arg_ind++;
+
+
+            return 0;
+        } else {
+            printerr(INVALID_OPTION);
+            return 1;
+        }
+    } else {
+        printerr(INVALID_USAGE);
         return 1;
     }
 }

@@ -4,9 +4,9 @@
 #include <string.h>
 #include <stdio.h>
 
-int search_str(const char** arr, const char* str, int last_ind)
+int search_str(const char** arr, const char* str, int nmemb)
 {
-    for (int i = 0; i <= last_ind; i++)
+    for (int i = 0; i < nmemb; i++)
         if (strcmp(arr[i], str) == 0) return i;
     return -1;
 }

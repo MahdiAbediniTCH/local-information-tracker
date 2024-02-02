@@ -383,4 +383,13 @@ State* do_a_commit(char* message)
     return commit;
 }
 
+int get_n_changes(State* state)
+{
+    int n = 0;
+    for (int i = 0; i < state->n_files; i++) {
+        n += (state->file_stat[i] != S_UNCHANGED);
+    }
+    return n;
+}
+
 #endif // CHANGES_H
