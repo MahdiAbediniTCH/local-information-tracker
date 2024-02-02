@@ -425,17 +425,20 @@ int exec_log(int argc, char *argv[])
                 printerr(INVALID_TIME_FORMAT);
                 return 1;
             }
-
             return 0;
+
         } else if ( strcmp(argv[arg_ind] + 1, "before") == 0 ) {
             if ( argc != 4) {
                 printerr(INVALID_USAGE);
                 return 1;
             }
             arg_ind++;
-
-
+            if ( !print_commits_before(argv[arg_ind]) ) {
+                printerr(INVALID_TIME_FORMAT);
+                return 1;
+            }
             return 0;
+
         } else if ( strcmp(argv[arg_ind] + 1, "search") == 0 ) {
             if ( argc != 4) {
                 printerr(INVALID_USAGE);
