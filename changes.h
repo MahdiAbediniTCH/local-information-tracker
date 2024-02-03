@@ -151,6 +151,7 @@ int stage_file(char* filename, State* stage_obj)
         return !returnval;
     } else if ( file_exists(filename, false) ) { // File
         char* relpath = file_relative_to_root(filename, find_root_path());
+        if (relpath == NULL) return 1;
         int f_ind = find_state_file(stage_obj, relpath);
         bool is_staged = false;
         enum Filestat stat = compare_wt_with_state(get_head_id(), relpath);
@@ -209,6 +210,7 @@ int print_stage_status(char* filename, State* stage_obj, int depth)
         return 0;
     } else if ( file_exists(filename, false) ) { // File
         char* relpath = file_relative_to_root(filename, find_root_path());
+        if (relpath == NULL) return 1;
         int f_ind = find_state_file(stage_obj, relpath);
         printf("- %s: ", relpath);
         if (f_ind > -1) {
@@ -284,6 +286,7 @@ int unstage_file(char* filename, State* stage_obj)
         return !returnval;
     } else if ( file_exists(filename, false) ) { // File
         char* relpath = file_relative_to_root(filename, find_root_path());
+        if (relpath == NULL) return 1;
         copy_file_attributes(stage_obj, get_head_commit(), relpath, true);
         return 0;
     } else {
@@ -311,6 +314,7 @@ int show_file_status(char* filename, State* head_obj, State* stage_obj)
         return 0;
     } else if ( file_exists(filename, false) ) { // File
         char* relpath = file_relative_to_root(filename, find_root_path());
+        if (relpath == NULL) return 1;
         int f_ind = find_state_file(stage_obj, relpath);
         enum Filestat stat_head = compare_wt_with_state(get_head_id(), relpath);
         if (stat_head == S_UNCHANGED) return 1;
