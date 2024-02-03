@@ -47,6 +47,10 @@ INVALID_TIME_FORMAT[] = "Invalid time format. Try using YYYY/MM/DD HH:mm\n",
 NO_MESSAGES_FOUND[] = "No commit messages were found matching the given word\n",
 BRANCH_EXISTS[] = "Branch already exists\n",
 CHECKOUT_FAILURE[] = "Could not locate identifier\n",
+CHECKOUT_UNCHANGED_ERR[] = "There are uncommitted changes in working tree\n",
+COMMIT_HEAD_DETACHED[] = "Cannot commit in detached HEAD mode\n",
+BRANCH_HEAD_DETACHED[] = "Cannot create a new branch in detached HEAD mode\n",
+CHECKOUT_CANCELLED[] = "Checkout cancelled.\n",
 
 SHORTCUT_NOT_FOUND[] = "\033[0;31mCouldn't locate shortcut key \"%s\"\033[0m\n",
 SHORTCUT_ALREADY_EXISTS[] = "\033[0;31mShortcut key \"%s\" already exists\033[0m\n",
@@ -74,8 +78,10 @@ SHORTCUT_REMOVE_SUCCESS[] = "Shortcut \"%s\" removed successfully\n",
 BRANCH_CREATE_SUCCESS[] = "Created new branch \"%s\" on HEAD(%x)\n",
 DETACHED_WARNING[] = "\033[0;33mWarning: HEAD is now detached\033[0m\n",
 CHECKOUT_SUCCESS[] = "Switched to %s\n",
+CHECKOUT_HEAD_WARNING[] = "\033[0;33mThis action will erase all changes in the working tree. Do you want to continue?(Y/n): \033[0m",
 
-LOG_FORMAT[] = "Commit \033[0;36m%x\033[0m \nBranch: \033[1;32m%s\033[0m \nAuthor: %s <%s> \nDate: \033[0;34m%s\033[0mNumber of changes: %d \nMessage: \033[0;33m%s\033[0m\n\n"
+LOG_FORMAT[] = "Commit \033[0;36m%x\033[0m \nBranch: \033[1;32m%s\033[0m \nAuthor: %s <%s> \nDate: \033[0;34m%s\033[0mNumber of changes: %d \nMessage: \033[0;33m%s\033[0m\n\n",
+HEAD_MARKING[] = "Commit \033[0;36m%x\033[0m [\033[3;1;36mHEAD\033[0m]\nBranch: \033[1;32m%s\033[0m \nAuthor: %s <%s> \nDate: \033[0;34m%s\033[0mNumber of changes: %d \nMessage: \033[0;33m%s\033[0m\n\n"
 ;
 
 // Paths

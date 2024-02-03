@@ -9,6 +9,8 @@
 #include "struct-state.h"
 #include "data.h"
 
+int change_branch_id(char*, int);
+
 int create_root_commit()
 {
     State* root = initialize_state(ROOT_ID, ROOT_ID, "", "master", "", "", ".lit\\states\\commits\\0");
@@ -107,16 +109,21 @@ enum Filestat compare_wt_with_state(int state_id, char* relpath)
     FILE* wt_file = open_wt_file(relpath);
 
     if ( (sfile_ind == -1 || state->file_stat[sfile_ind] == S_DELETED) && wt_file != NULL ) {
+        fclose(wt_file);
         return S_ADDED;
     } else if ( (sfile_ind == -1 || state->file_stat[sfile_ind] == S_DELETED) && wt_file == NULL ) {
+        fclose(wt_file);
         return S_UNCHANGED; // Special case, be careful
     } else if ( sfile_ind > -1 && wt_file == NULL ) {
+        fclose(wt_file);
         return S_DELETED;
     } else {
         FILE* s_file = open_state_file(state, relpath);
         if ( is_the_same_textfile(s_file, wt_file) ) {
+            fclose(wt_file);
             return S_UNCHANGED;
         } else {
+            fclose(wt_file);
             return S_MODIFIED;
         }
     }
@@ -277,7 +284,6 @@ int unstage_file(char* filename, State* stage_obj)
         return !returnval;
     } else if ( file_exists(filename, false) ) { // File
         char* relpath = file_relative_to_root(filename, find_root_path());
-        // TODO: AFTER DOING THE COMMITS, DO THE CHANGES WITH DIFFERENT STATS ////???///// wym?
         copy_file_attributes(stage_obj, get_head_commit(), relpath, true);
         return 0;
     } else {
@@ -430,6 +436,23 @@ int create_new_branch(char* branch)
     chdir(original_path);
     return 0;
 }
+
+int change_branch_id(char* branch, int id)
+{
+    int commit_id = get_branch_commit_id(branch);
+    if (commit_id == -1) return -1;
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_repo_data());
+    chdir("branch");
+    //
+    FILE* br_file = fopen(branch, "wb");
+    fwrite(&id, sizeof(int), 1, br_file);
+    fclose(br_file);
+    //
+    chdir(original_path);
+    return 0;
+}
 // Returns branch commit id
 int switch_branch(char* branch)
 {
@@ -483,6 +506,16 @@ bool is_stage_empty()
     return true;
 }
 
+bool is_wt_unchanged()
+{
+    State* head = get_head_commit();
+    for (int i = 0; i < head->n_files; i++) {
+        if (compare_wt_with_state(get_head_id(), head->tracked_files[i]) != S_UNCHANGED)
+            return false;
+    }
+    return true;
+}
+
 State* do_a_commit(char* message)
 {
     if (is_stage_empty()) return NULL;
@@ -495,6 +528,7 @@ State* do_a_commit(char* message)
     copy_all_files(commit, stage);
     change_head(commit->state_id);
     create_stage();
+    change_branch_id(commit->branch_name, commit->state_id);
     return commit;
 }
 
@@ -528,6 +562,7 @@ int checkout(char* where)
     // HEAD
     if ( strcmp(where, "HEAD") == 0 ) {
         change_wt_files_to_commit(get_head_commit());
+        create_stage();
         return 0;
     } 
     // Branches
@@ -537,6 +572,7 @@ int checkout(char* where)
         change_head(branch_id);
         switch_branch(where);
         detached_head(-1);
+        create_stage();
         return 1;
     }
     // Commit id // DETACHED

@@ -40,7 +40,7 @@ int get_author_email(char*);
 int delete_state_file(const State*, char*);
 
 
-State* initialize_state(int id, int parent_id, char* message, char* branch, char* name, char* email, char* data_dir) // TODO: decide about the arguments
+State* initialize_state(int id, int parent_id, char* message, char* branch, char* name, char* email, char* data_dir)
 {
     State* state = (State*) malloc(sizeof(State));
     state->state_id = id;
@@ -137,7 +137,7 @@ int write_state(State* state, char* path)
     chdir(find_root_path());
 
     mkdir(path); // Creates the folder if it already doesn't exist
-    chdir(path); // TODO: MAKE SURE ABOUT THE ABS OR REL PATH
+    chdir(path);
     mkdir("root");
     // Writing meta data
     FILE* meta = fopen("meta.txt", "w");
@@ -163,7 +163,6 @@ int update_all_state_files(State* state)
     char original_path[PATH_MAX];
     getcwd(original_path, sizeof(original_path));
     chdir(find_root_path());
-    // TODO: check if files exist in root dir???
     for (int i = 0; i < state->n_files; i++) {
         char* filename = state->tracked_files[i];
         if (state->file_stat[i] == S_DELETED) {
@@ -194,7 +193,6 @@ int update_all_state_files(State* state)
 // Returns the index, returns -1 if not found
 int find_state_file(const State* state, char* filename) // Relative to root without .
 {
-    // TODO: If it's necessary, make sure to change filename to the correct relative form
     for (int i = 0; i < state->n_files; i++) {
         if ( strcmp(state->tracked_files[i], filename) == 0 ) {
             return i;
@@ -282,6 +280,7 @@ int delete_wt_file(char* relpath)
     sprintf(file_path, "%s", relpath);
     if ( remove(file_path) == -1 ) {
         chdir(original_path);
+        // perror("Could not delete file");
         return 1;
     }
     chdir(original_path);
@@ -311,7 +310,6 @@ int get_state_data_dir(char* datadir, int id)
         sprintf(datadir, ".lit\\states\\commits\\%x", id);
         return 0;
     }
-    // TODO: Stash
     return -1;
 }
 
@@ -438,7 +436,6 @@ int copy_file_attributes(State* dest, const State* source, char* relpath, bool i
     }
     if (source->file_stat[ind_source] != S_DELETED) {
         copy_only_file(dest, source, relpath);
-    // TODO: Maybe it's necessary to keep the old versions
     } else {
         // not sure about this
         delete_state_file(dest, relpath);

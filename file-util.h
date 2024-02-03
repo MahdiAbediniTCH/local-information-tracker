@@ -1,5 +1,6 @@
 #ifndef FILEUTIL_H // Include guard
 #define FILEUTIL_H
+#undef __STRICT_ANSI__
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -9,6 +10,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "constants.h"
+
+#define realpath(N,R) _fullpath((R),(N),PATH_MAX)
 
 bool is_file(const char* name)
 {
@@ -54,12 +57,10 @@ int relative_path(char* path, const char* relative_to)
     return 0;
 }
 
-char* file_relative_to_root(const char* filename_only, const char* relative_to)
+char* file_relative_to_root(const char* filename, const char* relative_to)
 {
     char* rel_path = (char*) malloc(PATH_MAX * sizeof(char));
-    getcwd(rel_path, PATH_MAX);
-    strcat(rel_path, "\\");
-    strcat(rel_path, filename_only);
+    realpath(filename, rel_path); 
     if ( relative_path(rel_path, relative_to) == 1 ) return NULL;
     return rel_path;
 }

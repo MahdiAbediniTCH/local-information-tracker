@@ -101,7 +101,6 @@ int exec_add(int argc, char *argv[])
             return 1;
         }
     }
-    // TODO: did_stage doesn't get the good result from the function
     bool did_stage = false;
     State* stage_obj = get_stage_object();
     for (int i = arg_ind; i < argc; i++) {
@@ -200,7 +199,10 @@ int exec_commit(int argc, char *argv[])
     } if (argc < 3) {
         printerr(INVALID_USAGE);
         return 1;
-    } 
+    } if (detached_head(0)) {
+        printerr(COMMIT_HEAD_DETACHED);
+        return 1;
+    }
     State* commit = NULL;
     int arg_ind = 2;
     if (argv[arg_ind][0] == '-') {
@@ -472,6 +474,10 @@ int exec_branch(int argc, char* argv[])
         show_all_branches();
         return 0;
     } else if (argc == 3) {
+        if ( detached_head(0) ) {
+            printerr(BRANCH_HEAD_DETACHED);
+            return 1;
+        }
         if ( create_new_branch(argv[2]) == 1 ) {
             printerr(BRANCH_EXISTS);
             return 1;
@@ -491,7 +497,26 @@ int exec_checkout(int argc, char* argv[])
         printerr(NOT_REPO);
         return 1;
     }
-   if (argc == 3) {
+    if (argc == 3) {
+        
+        if ( !is_wt_unchanged() ) {
+            bool stop = true;
+            if ( strcmp(argv[2], "HEAD") == 0 ) { // Prompt user to make sure
+                char input[20];
+                printf(CHECKOUT_HEAD_WARNING);
+                scanf("%s", input);
+                if (input[0] == 'Y' || input[0] == 'y') {
+                    stop = false;
+                } else {
+                    printerr(CHECKOUT_CANCELLED);
+                    return 1;
+                }
+            }
+            if (stop) {
+                printerr(CHECKOUT_UNCHANGED_ERR);
+                return 1;
+            }
+        }
         int result = checkout(argv[2]);
         if (result < 0) {
             printerr(CHECKOUT_FAILURE);

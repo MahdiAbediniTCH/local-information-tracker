@@ -21,14 +21,25 @@ time_t parse_time(char* strtime)
 
 void log_commit(State* commit)
 {
-    printf(LOG_FORMAT, 
-        commit->state_id, 
-        commit->branch_name, 
-        commit->author_name, commit->author_email, 
-        ctime(&(commit->time_created)), 
-        get_n_changes(commit), 
-        commit->message
-    );
+    if (get_head_id() == commit->state_id) {
+        printf(HEAD_MARKING, 
+            commit->state_id, 
+            commit->branch_name, 
+            commit->author_name, commit->author_email, 
+            ctime(&(commit->time_created)), 
+            get_n_changes(commit), 
+            commit->message
+        );
+    } else {
+        printf(LOG_FORMAT, 
+            commit->state_id, 
+            commit->branch_name, 
+            commit->author_name, commit->author_email, 
+            ctime(&(commit->time_created)), 
+            get_n_changes(commit), 
+            commit->message
+        );
+    }
 }
 
 void print_all_commits()

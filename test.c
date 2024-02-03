@@ -18,5 +18,5 @@ void debug_state(State* state)
 }
 
 int main() {
-    printf("%d\n", print_commits_since("1971/11/12 14:00"));
+    debug_state(get_stage_object());
 }
