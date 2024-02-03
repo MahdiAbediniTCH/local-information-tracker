@@ -99,22 +99,22 @@ enum Filestat calculate_new_state(int prior_id, int latter_id, char* relpath)
     }
 }
 
-enum Filestat compare_wd_with_state(int state_id, char* relpath)
+enum Filestat compare_wt_with_state(int state_id, char* relpath)
 {
     State* state = get_state_by_id(state_id);
     if (state == NULL) return 30; // idk
     int sfile_ind = find_state_file(state, relpath);
-    FILE* wd_file = open_wd_file(relpath);
+    FILE* wt_file = open_wt_file(relpath);
 
-    if ( (sfile_ind == -1 || state->file_stat[sfile_ind] == S_DELETED) && wd_file != NULL ) {
+    if ( (sfile_ind == -1 || state->file_stat[sfile_ind] == S_DELETED) && wt_file != NULL ) {
         return S_ADDED;
-    } else if ( (sfile_ind == -1 || state->file_stat[sfile_ind] == S_DELETED) && wd_file == NULL ) {
+    } else if ( (sfile_ind == -1 || state->file_stat[sfile_ind] == S_DELETED) && wt_file == NULL ) {
         return S_UNCHANGED; // Special case, be careful
-    } else if ( sfile_ind > -1 && wd_file == NULL ) {
+    } else if ( sfile_ind > -1 && wt_file == NULL ) {
         return S_DELETED;
     } else {
         FILE* s_file = open_state_file(state, relpath);
-        if ( is_the_same_textfile(s_file, wd_file) ) {
+        if ( is_the_same_textfile(s_file, wt_file) ) {
             return S_UNCHANGED;
         } else {
             return S_MODIFIED;
@@ -146,11 +146,11 @@ int stage_file(char* filename, State* stage_obj)
         char* relpath = file_relative_to_root(filename, find_root_path());
         int f_ind = find_state_file(stage_obj, relpath);
         bool is_staged = false;
-        enum Filestat stat = compare_wd_with_state(get_head_id(), relpath);
+        enum Filestat stat = compare_wt_with_state(get_head_id(), relpath);
         State* head = get_head_commit();
         if (stat == S_UNCHANGED && head->file_stat[find_state_file(head, relpath)] == S_DELETED) return 2;
         add_state_file(stage_obj, relpath, stat);
-        copy_state_file_from_wd(stage_obj, relpath);
+        copy_state_file_from_wt(stage_obj, relpath);
         return 0;
     } else {
         return 1;
@@ -167,7 +167,7 @@ int detect_deleted_files()
         char* relpath = head->tracked_files[i];
         int s_ind = find_state_file(stage, relpath);
         if (stage->file_stat[s_ind] == S_DELETED) continue;
-        enum Filestat stat = compare_wd_with_state(head->state_id, relpath);
+        enum Filestat stat = compare_wt_with_state(head->state_id, relpath);
         if (stat == S_DELETED) {
             found = true;
             delete_state_file(stage, relpath);
@@ -205,9 +205,9 @@ int print_stage_status(char* filename, State* stage_obj, int depth)
         int f_ind = find_state_file(stage_obj, relpath);
         printf("- %s: ", relpath);
         if (f_ind > -1) {
-            enum Filestat stat = compare_wd_with_state(STAGE_ID, relpath);
+            enum Filestat stat = compare_wt_with_state(STAGE_ID, relpath);
             if (stat == S_UNCHANGED) {
-                if (compare_wd_with_state(get_head_id(), relpath) == S_UNCHANGED) {
+                if (compare_wt_with_state(get_head_id(), relpath) == S_UNCHANGED) {
                     printf(FILE_IS_UNCHANGED_COLOR);
                 } else {
                     printf(FILE_IS_STAGED_COLOR);
@@ -306,12 +306,12 @@ int show_file_status(char* filename, State* head_obj, State* stage_obj)
     } else if ( file_exists(filename, false) ) { // File
         char* relpath = file_relative_to_root(filename, find_root_path());
         int f_ind = find_state_file(stage_obj, relpath);
-        enum Filestat stat_head = compare_wd_with_state(get_head_id(), relpath);
+        enum Filestat stat_head = compare_wt_with_state(get_head_id(), relpath);
         if (stat_head == S_UNCHANGED) return 1;
 
         printf("    ~ %s: ", relpath);
         if (f_ind > -1) {
-            enum Filestat stat = compare_wd_with_state(STAGE_ID, relpath);
+            enum Filestat stat = compare_wt_with_state(STAGE_ID, relpath);
             if (stat == S_UNCHANGED) {
                 printf(GREED_PLUS);
             } else {
@@ -336,11 +336,11 @@ bool show_deleted_files()
     State* head = get_head_commit();
     for (int i = 0; i < head->n_files; i++) {
         char* relpath = head->tracked_files[i];
-        enum Filestat stat = compare_wd_with_state(get_head_id(), relpath);
+        enum Filestat stat = compare_wt_with_state(get_head_id(), relpath);
         if (stat == S_DELETED) {
             didprint = true;
             printf("    ~ %s: ", relpath);
-            enum Filestat stat = compare_wd_with_state(STAGE_ID, relpath);
+            enum Filestat stat = compare_wt_with_state(STAGE_ID, relpath);
             if (stat == S_UNCHANGED) {
                 printf(GREED_PLUS);
             } else {
@@ -483,6 +483,52 @@ int get_n_changes(State* state)
         n += (state->file_stat[i] != S_UNCHANGED);
     }
     return n;
+}
+
+int change_wt_to_commit(const State* commit)
+{
+    // Delete everything that is tracked by current commit
+    State* head = get_head_commit();
+    for (int i = 0; i < head->n_files; i++) {
+        delete_state_file
+    }
+    
+    // Paste everything from the other commit
+    State* working_tree;
+    working_tree->data_dir = find_root_path();
+    for (int i = 0; i < commit->n_files; i++) {
+        copy_file_to_wt(commit, commit->tracked_files[i]);
+    }
+
+}
+// 0: to head, 1: to branch, 2: to commit, -1: invalid string, -2: commit id doesn't exist
+int checkout(char* where)
+{
+    // HEAD
+    if ( strcmp(where, "HEAD") == 0 ) {
+        change_wt_to_commit(get_head_commit());
+        return 0;
+    } 
+    // Branches
+    int branch_id = get_branch_commit_id(where);
+    if (branch_id != -1) {
+        change_wt_to_commit(get_state_by_id(branch_id));
+        return 1;
+    }
+    // Commit id // DETACHED
+    if ( !is_hex(where) ) return -1;
+    int id;
+    sscanf(where, "%x", &id);
+    State* commit = get_state_by_id(id);
+    if (commit == NULL) return -2;
+    change_wt_to_commit(commit);
+    // TODO: set detached mode
+    
+}
+
+char* which_branch(int commit_id)
+{
+
 }
 
 #endif // CHANGES_H

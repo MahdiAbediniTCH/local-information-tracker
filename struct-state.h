@@ -63,7 +63,10 @@ State* read_state(char* path)
     state->n_files = 0;
     // Going to the root of the repository
     chdir(find_root_path());
-    chdir(path);
+    if (chdir(path)) {
+        chdir(original_path);
+        return NULL;
+    }
     FILE* meta = fopen("meta.txt", "r");
     if (meta == NULL) {
         chdir(original_path);
@@ -215,7 +218,7 @@ int add_state_file(State* state, char* filename, enum Filestat file_stat) // Rel
     return 0;
 }
 // Returns 1 if the file is not found, 2 if deleted
-int copy_state_file_from_wd(State* state, char* filename)
+int copy_state_file_from_wt(State* state, char* filename)
 {
     char original_path[PATH_MAX];
     getcwd(original_path, sizeof(original_path));
@@ -252,7 +255,7 @@ int copy_state_file_from_wd(State* state, char* filename)
     return 0;
 }
 // Returns 1 upon success, 0 if the file is already deleted
-int delete_state_file(const State* state, char* relpath)
+int delete_wt_file(const State* state, char* relpath)
 {
     char original_path[PATH_MAX];
     getcwd(original_path, sizeof(original_path));

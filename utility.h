@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 int search_str(const char** arr, const char* str, int nmemb)
 {
@@ -16,6 +17,16 @@ void printerr(const char* error)
     printf("\033[0;31m");
     fprintf(stderr, error);
     printf("\033[0m");
+}
+
+bool is_hex(char* str)
+{
+    for (int i = 0; i < strlen(str); i++) {
+        if ( !( ('0' <= str[i] && str[i] <= '9') || ('a' <= str[i] && str[i] <= 'f') ) ) {
+            return false;
+        }
+    }
+    return true;
 }
 
 #endif // UTILITY_H

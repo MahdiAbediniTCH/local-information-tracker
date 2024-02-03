@@ -485,4 +485,24 @@ int exec_branch(int argc, char* argv[])
     }
 }
 
+int exec_checkout(int argc, char* argv[])
+{
+    if ( !is_in_repo() ) {
+        printerr(NOT_REPO);
+        return 1;
+   if (argc == 3) {
+        int result = checkout(argv[3]);
+        if (result < 0) {
+            printerr(CHECKOUT_FAILURE);
+            return 1;
+        }
+        if (is_head_detached()) {
+            printf(DETACHED_WARNING);
+        }
+        return 0;
+    } else {
+        printerr(INVALID_USAGE);
+        return 1;
+    }
+}
 #endif

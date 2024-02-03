@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H // Include guarding
 #define CONSTANTS_H
 // Allowed commands
-#define N_COMMANDS 11 // Number of allowed commands
+#define N_COMMANDS 12 // Number of allowed commands
 #define COMMAND_MAX 100 // Maximum length of a command
 const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "config", 
@@ -15,6 +15,7 @@ const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "remove",
 "log",
 "branch",
+"checkout",
 };
 // User info
 #define USERNAME_MAX 30
@@ -45,6 +46,7 @@ OPTION_REQUIRED[] = "An option is required for this command\n",
 INVALID_TIME_FORMAT[] = "Invalid time format. Try using YYYY/MM/DD HH:mm\n",
 NO_MESSAGES_FOUND[] = "No commit messages were found matching the given word\n",
 BRANCH_EXISTS[] = "Branch already exists\n",
+CHECKOUT_FAILURE[] = "Could not locate identifier\n",
 
 SHORTCUT_NOT_FOUND[] = "\033[0;31mCouldn't locate shortcut key \"%s\"\033[0m\n",
 SHORTCUT_ALREADY_EXISTS[] = "\033[0;31mShortcut key \"%s\" already exists\033[0m\n",
@@ -70,6 +72,7 @@ SHORTCUT_ADD_SUCCESS[] = "Shortcut \"%s\" added successfully\n",
 SHORTCUT_REPLACE_SUCCESS[] = "Shortcut \"%s\" replaced successfully\n",
 SHORTCUT_REMOVE_SUCCESS[] = "Shortcut \"%s\" removed successfully\n",
 BRANCH_CREATE_SUCCESS[] = "Created new branch \"%s\" on HEAD(%x)\n",
+DETACHED_WARNING[] = "\033[0;33mWarning: HEAD is now detached\033[0m\n",
 
 LOG_FORMAT[] = "Commit \033[0;36m%x\033[0m \nBranch: \033[1;32m%s\033[0m \nAuthor: %s <%s> \nDate: \033[0;34m%s\033[0mNumber of changes: %d \nMessage: \033[0;33m%s\033[0m\n\n"
 ;

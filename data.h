@@ -84,7 +84,7 @@ int create_config_global()
     return 1;
 }
 // Read mode
-FILE* open_wd_file(char* relpath)
+FILE* open_wt_file(char* relpath)
 {
     char original_path[PATH_MAX];
     getcwd(original_path, sizeof(original_path));
