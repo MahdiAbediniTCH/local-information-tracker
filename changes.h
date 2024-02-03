@@ -185,7 +185,25 @@ int detect_deleted_files()
     if (found) {
         write_state(stage, stage->data_dir);
     }
-    return found;
+    // checking deleted newly added files
+    char* filestoremove[MAX_TRACKED_FILES];
+    int n = 0;
+    for (int i = 0; i < stage->n_files; i++) {
+        if (stage->file_stat[i] == S_ADDED) {
+            enum Filestat stat = compare_wt_with_state(STAGE_ID, stage->tracked_files[i]);
+            if (stat == S_DELETED) {
+                filestoremove[n++] = stage->tracked_files[i];
+            }
+        }
+    }
+    for (int i = 0; i < n; i++) {
+        delete_state_file(stage, filestoremove[i]);
+        remove_file_from_state_data(stage, filestoremove[i]);
+    }
+    if (n > 0) {
+        write_state(stage, stage->data_dir);
+    }
+    return found || n > 0;
 }
 
 int print_stage_status(char* filename, State* stage_obj, int depth) 
