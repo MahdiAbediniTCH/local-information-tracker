@@ -490,13 +490,16 @@ int exec_checkout(int argc, char* argv[])
     if ( !is_in_repo() ) {
         printerr(NOT_REPO);
         return 1;
+    }
    if (argc == 3) {
-        int result = checkout(argv[3]);
+        int result = checkout(argv[2]);
         if (result < 0) {
             printerr(CHECKOUT_FAILURE);
             return 1;
+        } else {
+            printf(CHECKOUT_SUCCESS, argv[2]);
         }
-        if (is_head_detached()) {
+        if (detached_head(0)) {
             printf(DETACHED_WARNING);
         }
         return 0;

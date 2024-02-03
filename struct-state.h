@@ -255,7 +255,7 @@ int copy_state_file_from_wt(State* state, char* filename)
     return 0;
 }
 // Returns 1 upon success, 0 if the file is already deleted
-int delete_wt_file(const State* state, char* relpath)
+int delete_state_file(const State* state, char* relpath)
 {
     char original_path[PATH_MAX];
     getcwd(original_path, sizeof(original_path));
@@ -263,6 +263,23 @@ int delete_wt_file(const State* state, char* relpath)
 
     char file_path[PATH_MAX];
     sprintf(file_path, "%s\\root\\%s", state->data_dir, relpath);
+    if ( remove(file_path) == -1 ) {
+        chdir(original_path);
+        return 1;
+    }
+    chdir(original_path);
+    return 0;
+}
+
+// Returns 1 upon success, 0 if the file is already deleted
+int delete_wt_file(char* relpath)
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_root_path());
+
+    char file_path[PATH_MAX];
+    sprintf(file_path, "%s", relpath);
     if ( remove(file_path) == -1 ) {
         chdir(original_path);
         return 1;
@@ -358,6 +375,32 @@ int copy_only_file(const State* dest, const State* source, char* relpath)
 
     sprintf(system_command, "copy /Y \"%s\\root\\%s\" \"%s\\root\\%s\" >NUL 2>NUL", source->data_dir, relpath, dest->data_dir, relpath);
     // TEMPCOMMENT: printf("DEBUG: %s\n", system_command);
+    system(system_command);
+
+    chdir(original_path);
+    return 0;
+}
+
+// Doesn't validate anything
+int copy_only_file_to_wt(const State* source, char* relpath)
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_root_path());
+
+    // Temporarily changing the filename to make the folders
+    char system_command[PATH_MAX];
+    char* last_sep = strrchr(relpath, '\\');
+    if ( last_sep != NULL ) {
+        *last_sep = '\0';
+        if ( strlen(relpath) > 0 ) {
+            sprintf(system_command, "mkdir \"%s\" >NUL 2>NUL", relpath);
+            system(system_command);
+        }
+        *last_sep = '\\';
+    }
+
+    sprintf(system_command, "copy /Y \"%s\\root\\%s\" \"%s\" >NUL 2>NUL", source->data_dir, relpath, relpath);
     system(system_command);
 
     chdir(original_path);

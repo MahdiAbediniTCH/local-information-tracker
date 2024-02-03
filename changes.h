@@ -329,6 +329,28 @@ int show_file_status(char* filename, State* head_obj, State* stage_obj)
         return 1;
     }
 }
+// state 0: return current status (true for detached) | state 1: head will be detached | state -1: attached
+bool detached_head(int state)
+{
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_repo_data());
+    //
+    bool st;
+    if (state == 0) {
+        FILE* d_file = fopen("DETACHED", "rb");
+        fread(&st, sizeof(bool), 1, d_file);
+        fclose(d_file);
+    } else {
+        st = (state == 1) ? true : false;
+        FILE* d_file = fopen("DETACHED", "wb");
+        fwrite(&st, sizeof(bool), 1, d_file);
+        fclose(d_file);
+    }
+    //
+    chdir(original_path);
+    return st;
+}
 
 bool show_deleted_files()
 {
@@ -485,34 +507,36 @@ int get_n_changes(State* state)
     return n;
 }
 
-int change_wt_to_commit(const State* commit)
+int change_wt_files_to_commit(const State* commit)
 {
     // Delete everything that is tracked by current commit
     State* head = get_head_commit();
     for (int i = 0; i < head->n_files; i++) {
-        delete_state_file
+        delete_wt_file(head->tracked_files[i]);
     }
     
     // Paste everything from the other commit
-    State* working_tree;
-    working_tree->data_dir = find_root_path();
     for (int i = 0; i < commit->n_files; i++) {
-        copy_file_to_wt(commit, commit->tracked_files[i]);
+        if (commit->file_stat[i] == S_DELETED) continue;
+        copy_only_file_to_wt(commit, commit->tracked_files[i]);
     }
-
+    return 0;
 }
 // 0: to head, 1: to branch, 2: to commit, -1: invalid string, -2: commit id doesn't exist
 int checkout(char* where)
 {
     // HEAD
     if ( strcmp(where, "HEAD") == 0 ) {
-        change_wt_to_commit(get_head_commit());
+        change_wt_files_to_commit(get_head_commit());
         return 0;
     } 
     // Branches
     int branch_id = get_branch_commit_id(where);
     if (branch_id != -1) {
-        change_wt_to_commit(get_state_by_id(branch_id));
+        change_wt_files_to_commit(get_state_by_id(branch_id));
+        change_head(branch_id);
+        switch_branch(where);
+        detached_head(-1);
         return 1;
     }
     // Commit id // DETACHED
@@ -521,14 +545,9 @@ int checkout(char* where)
     sscanf(where, "%x", &id);
     State* commit = get_state_by_id(id);
     if (commit == NULL) return -2;
-    change_wt_to_commit(commit);
-    // TODO: set detached mode
-    
-}
-
-char* which_branch(int commit_id)
-{
-
+    change_wt_files_to_commit(commit);
+    detached_head(1);
+    return 2;
 }
 
 #endif // CHANGES_H

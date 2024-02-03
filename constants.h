@@ -73,6 +73,7 @@ SHORTCUT_REPLACE_SUCCESS[] = "Shortcut \"%s\" replaced successfully\n",
 SHORTCUT_REMOVE_SUCCESS[] = "Shortcut \"%s\" removed successfully\n",
 BRANCH_CREATE_SUCCESS[] = "Created new branch \"%s\" on HEAD(%x)\n",
 DETACHED_WARNING[] = "\033[0;33mWarning: HEAD is now detached\033[0m\n",
+CHECKOUT_SUCCESS[] = "Switched to %s\n",
 
 LOG_FORMAT[] = "Commit \033[0;36m%x\033[0m \nBranch: \033[1;32m%s\033[0m \nAuthor: %s <%s> \nDate: \033[0;34m%s\033[0mNumber of changes: %d \nMessage: \033[0;33m%s\033[0m\n\n"
 ;

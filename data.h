@@ -17,6 +17,7 @@ int create_root_commit();
 int change_head(int);
 int create_stage();
 int create_new_branch(char* branch);
+bool detached_head(int state);
 int switch_branch(char* branch);
 
 
@@ -274,6 +275,7 @@ int initialize_repo()
     create_stage();
     create_new_branch("master");
     switch_branch("master");
+    detached_head(-1);
     chdir(".."); // Go back to the original path
     return 0;
 }
