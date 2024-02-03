@@ -586,6 +586,7 @@ int checkout(char* where)
     State* commit = get_state_by_id(id);
     if (commit == NULL) return -2;
     change_wt_files_to_commit(commit);
+    change_head(id);
     detached_head(1);
     return 2;
 }
