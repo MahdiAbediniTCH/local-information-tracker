@@ -104,7 +104,6 @@ int exec_add(int argc, char *argv[])
     bool did_stage = false;
     State* stage_obj = get_stage_object();
     for (int i = arg_ind; i < argc; i++) {
-        // TODO: Later implement deleting files that were staged before
         int return_status = stage_file(argv[i], stage_obj);
         write_state(stage_obj, stage_obj->data_dir);
         if (!return_status) {
@@ -114,7 +113,6 @@ int exec_add(int argc, char *argv[])
         }
     }
     // Detect deleted files
-    // TODO:(?) if a staged file is not in head and gets deleted, it can't be updated with add
     if (detect_deleted_files()) {
         printf("Detected file deletion compared to HEAD\n");
     }
@@ -531,6 +529,58 @@ int exec_checkout(int argc, char* argv[])
     } else {
         printerr(INVALID_USAGE);
         return 1;
+    }
+}
+
+int exec_revert(int argc, char* argv[])
+{
+    if ( !is_in_repo() ) {
+        printerr(NOT_REPO);
+        return 1;
+    }
+    if (argc < 3) {
+        printerr(FEW_ARGUMENTS);
+        return 1;
+    }
+    int arg_ind = 2;
+    char message[COMMIT_MESSAGE_MAX] = "";
+    if (argv[arg_ind][0] == '-') {
+        if ( strcmp(argv[arg_ind] + 1, "m") == 0 ) {
+            if (argc != 5) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            arg_ind++;
+            strcpy(message, argv[arg_ind]);
+        } else if ( strcmp(argv[arg_ind] + 1, "n") == 0 ) {
+            arg_ind++;
+            if ( revert_no_commit(argv[arg_ind]) == NULL ) {
+                printerr(INVALID_COMMIT_ID);
+                return 1;
+            } else {
+                printf(REVERT_SUCCESS_N, argv[arg_ind]);
+                return 0;
+            }
+        } else {
+            printerr(INVALID_OPTION);
+            return 1;
+        }
+        arg_ind++;
+    }
+    if (argc != arg_ind + 1) {
+        printerr(INVALID_USAGE);
+        return 1;
+    }
+    int result = revert(argv[arg_ind], message);
+    if ( result == 1 ) {
+        printerr(INVALID_COMMIT_ID);
+        return 1;
+    } else if ( result == 0 ) {
+        printf(REVERT_SUCCESS, argv[arg_ind]);
+        return 0;
+    } else if ( result == 2 ) {
+        printf(REVERT_IS_SAME);
+        return 0;
     }
 }
 #endif

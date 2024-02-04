@@ -609,4 +609,56 @@ int checkout(char* where)
     return 2;
 }
 
+
+State* revert_no_commit(char* str_id)
+{
+    int id;
+    if ( strncmp(str_id, "HEAD-", 5) == 0 ) {
+        int n_back = atoi(str_id + 5);
+        if (n_back < 1) return NULL;
+        id = get_head_id();
+        for (int i = 0; i < n_back; i++) {
+            State* commit = get_state_by_id(id);
+            id = commit->parent_id;
+            free(commit);
+        }
+        if (id < 0xa0) return NULL;
+        
+    } else  {
+        if ( !is_hex(str_id) ) return NULL;
+        sscanf(str_id, "%x", &id);
+    }
+    // TODO: checking if there was a merge in the middle
+    State* commit = get_state_by_id(id);
+    if (commit == NULL) return NULL;
+    change_wt_files_to_commit(commit);
+    return commit;
+}
+
+int revert(char* str_id, char* message)
+{
+    State* commit = revert_no_commit(str_id);
+    if (commit == NULL) return 1;
+    State* stage = get_stage_object();
+
+    char original_path[PATH_MAX];
+    getcwd(original_path, sizeof(original_path));
+    chdir(find_root_path());
+    //
+    for (int i = 0; i < commit->n_files; i++) {
+        stage_file(commit->tracked_files[i], stage);
+    }
+    write_state(stage, stage->data_dir);
+    detect_deleted_files();
+    if (strlen(message) < 1) {
+        message = commit->message;
+    }
+    //
+    chdir(original_path);
+
+    // TODO: if the stage is the same, it won't make a new commit bruh
+    if (do_a_commit(message) == NULL) return 2;
+    return 0;
+}
+
 #endif // CHANGES_H

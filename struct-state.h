@@ -380,7 +380,7 @@ int copy_only_file(const State* dest, const State* source, char* relpath)
 }
 
 // Doesn't validate anything
-int copy_only_file_to_wt(const State* source, char* relpath)
+int copy_only_file_to_wt(const State* source, const char* relpath)
 {
     char original_path[PATH_MAX];
     getcwd(original_path, sizeof(original_path));
