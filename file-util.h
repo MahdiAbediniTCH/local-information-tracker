@@ -80,4 +80,31 @@ bool is_the_same_textfile(FILE* f1, FILE* f2)
     return are_same;
 }
 
+bool grep_file(FILE* file, char* word, bool line_numbers)
+{
+    int n = 1;
+    char line[MAX_LINE_LENGTH];
+    int word_len = strlen(word);
+    bool found = false;
+    while ( fgets(line, MAX_LINE_LENGTH, file) != NULL ) {
+        if (strstr(line, word) != NULL) {
+            found = true;
+            if (line_numbers) printf("\033[0;36m%d\033[0m\t", n);
+            char* i = line;
+            char* pointer;
+            while ( (pointer = strstr(i, word)) ) {
+                printf("%.*s", pointer - i, i);
+                printf("\033[3;33m");
+                printf("%.*s", word_len, pointer);
+                printf("\033[0m");
+                i = pointer + word_len;
+            }
+            printf(i);
+
+        }
+        n++;
+    }
+    return found;
+}
+
 #endif // FILEUTIL_H

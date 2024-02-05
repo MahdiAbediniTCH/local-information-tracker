@@ -157,7 +157,6 @@ int exec_reset(int argc, char *argv[])
     }
     bool did_unstage = false;
     for (int i = arg_ind; i < argc; i++) {
-        // TODO: Later implement deleting files that were staged before
         State* stage_obj = get_stage_object();
         int return_status = unstage_file(argv[i], stage_obj);
         write_state(stage_obj, stage_obj->data_dir);
@@ -188,6 +187,7 @@ int exec_status(int argc, char *argv[])
     printf(ON_BRANCH, get_current_branch_name(branch));
     show_file_status(find_root_path(), get_head_commit(), get_stage_object());
     show_deleted_files();
+    return 0;
 }
 
 int exec_commit(int argc, char *argv[])
@@ -592,11 +592,11 @@ int exec_revert(int argc, char* argv[])
     if ( result == 1 ) {
         printerr(REVERT_INVALID_ID);
         return 1;
-    } else if ( result == 0 ) {
-        printf(REVERT_SUCCESS, argv[arg_ind]);
-        return 0;
     } else if ( result == 2 ) {
         printf(REVERT_IS_SAME);
+        return 0;
+    } else {
+        printf(REVERT_SUCCESS, argv[arg_ind]);
         return 0;
     }
 }
@@ -735,6 +735,7 @@ int exec_merge(int argc, char* argv[])
     default:
         break;
     }
+    return 0;
 }
 
 int exec_tag(int argc, char* argv[])
@@ -813,6 +814,92 @@ int exec_tag(int argc, char* argv[])
     }
     if (overwrite) printf(TAG_SUCCESS_OW, tagname);
     else printf(TAG_SUCCESS, tagname);
+    return 0;
+}
+
+int exec_grep(int argc, char* argv[])
+{
+    if ( !is_in_repo() ) {
+        printerr(NOT_REPO);
+        return 1;
+    } if (argc < 6) {
+        printerr(FEW_ARGUMENTS);
+        return 1;
+    }
+    char* filename = NULL;
+    char* word = NULL;
+    int commit_id = 0x0;
+    bool line_numbers = false;
+    int arg_ind = 2;
+
+    while (arg_ind < argc) {
+        if (argv[arg_ind][0] == '-') {
+            if ( strcmp(argv[arg_ind] + 1, "f") == 0 ) {
+                arg_ind++;
+                if (arg_ind >= argc) {
+                    printerr(INVALID_USAGE);
+                    return 1;
+                }
+                filename = argv[arg_ind];
+
+            } else if ( strcmp(argv[arg_ind] + 1, "p") == 0 ) {
+                arg_ind++;
+                if (arg_ind >= argc) {
+                    printerr(INVALID_USAGE);
+                    return 1;
+                }
+                word = argv[arg_ind];
+
+            } else if ( strcmp(argv[arg_ind] + 1, "c") == 0 ) {
+                arg_ind++;
+                if (arg_ind >= argc) {
+                    printerr(INVALID_USAGE);
+                    return 1;
+                }
+                if (!is_hex(argv[arg_ind])) {
+                    printerr(INVALID_COMMIT_IDS);
+                    return 1;
+                }
+                sscanf(argv[arg_ind], "%x", &commit_id);
+
+            } else if ( strcmp(argv[arg_ind] + 1, "n") == 0 ) {
+                line_numbers = true;
+            } else {
+                printerr(INVALID_OPTION);
+                return 1;
+            }
+        } else {
+            printerr(OPTION_REQUIRED);
+            return 1;
+        }
+        arg_ind++;
+    }
+    if (argc > arg_ind) {
+        printerr(INVALID_USAGE);
+        return 1;
+    } if (filename == NULL || word == NULL) {
+        printerr(MISSING_ARGUMENTS);
+        return 1;
+    }
+    FILE* file;
+    if (commit_id == 0x0) {
+        file = fopen(filename, "r");
+    } else {
+        State* commit = get_state_by_id(commit_id);
+        if (commit == NULL) {
+            printerr(INVALID_COMMIT_IDS);
+            return 1;
+        }
+        file = open_state_file(get_state_by_id(commit_id), filename);
+    }
+    if (file == NULL) {
+        printerr(FILES_NOT_FOUND);
+        return 1;
+    }
+    printf("- %s:\n", filename);
+    if ( !grep_file(file, word, line_numbers) ) {
+        printf(NO_MATCH, word);
+    }
     return 0;
 }
 #endif

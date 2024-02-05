@@ -21,7 +21,7 @@ void printerr(const char* error)
 
 bool is_hex(char* str)
 {
-    for (int i = 0; i < strlen(str); i++) {
+    for (unsigned i = 0; i < strlen(str); i++) {
         if ( !( ('0' <= str[i] && str[i] <= '9') || ('a' <= str[i] && str[i] <= 'f') ) ) {
             return false;
         }

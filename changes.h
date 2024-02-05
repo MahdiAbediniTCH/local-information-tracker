@@ -87,7 +87,7 @@ enum Filestat compare_states(State* prior, State* latter, char* relpath)
     if ( (find_p == -1 || prior->file_stat[find_p] == S_DELETED) && (find_l > -1 && latter->file_stat[find_l] != S_DELETED) ) {
         return S_ADDED;
     } else if ( (find_p == -1 || prior->file_stat[find_p] == S_DELETED) && (find_l == -1 || prior->file_stat[find_l] == S_DELETED) ) {
-        return S_UNCHANGED; // idk again
+        return S_UNCHANGED;
     } else if ( (find_p > -1 && prior->file_stat[find_p] != S_DELETED) && (find_l == -1 || prior->file_stat[find_l] == S_DELETED) ) {
         return S_DELETED;
     } else {
@@ -152,8 +152,6 @@ int stage_file(char* filename, State* stage_obj)
     } else if ( file_exists(filename, false) ) { // File
         char* relpath = file_relative_to_root(filename, find_root_path());
         if (relpath == NULL) return 1;
-        int f_ind = find_state_file(stage_obj, relpath);
-        bool is_staged = false;
         enum Filestat stat = compare_wt_with_state(get_head_id(), relpath);
         State* head = get_head_commit();
         if (stat == S_UNCHANGED && head->file_stat[find_state_file(head, relpath)] == S_DELETED) return 2;
@@ -632,7 +630,6 @@ State* revert_no_commit(char* str_id)
         if ( !is_hex(str_id) ) return NULL;
         sscanf(str_id, "%x", &id);
     }
-    // TODO: checking if there was a merge in the middle
     State* commit = NULL;
     int p_id = get_head_id();
     bool found_commit_id = false;
@@ -675,7 +672,6 @@ int revert(char* str_id, char* message)
     //
     chdir(original_path);
 
-    // TODO: if the stage is the same, it won't make a new commit 
     if (do_a_commit(message) == NULL) return 2;
     return 0;
 }
@@ -789,6 +785,7 @@ void print_differences(FILE* file1, FILE* file2, int start_1, int end_1, int sta
     if (!found_difference) {
         printf("No differences were found\n");
     }
+    // rewind(file1); rewind(file2);
 }
 
 int commit_differences(char* strid1, char* strid2)
