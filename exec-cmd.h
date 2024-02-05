@@ -657,9 +657,18 @@ int exec_diff(int argc, char* argv[])
 
             print_differences(file1, file2, s1, e1, s2, e2, file1_name, file2_name);
             fclose(file1); fclose(file2);
+            return 0;
 
         } else if ( strcmp(argv[arg_ind] + 1, "c") == 0 ) {
-
+            if (argc != 5) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            if ( commit_differences(argv[3], argv[4]) != 0 ) {
+                printerr(INVALID_COMMIT_IDS);
+                return 1;
+            }
+            return 0;
         } else {
             printerr(INVALID_OPTION);
             return 1;

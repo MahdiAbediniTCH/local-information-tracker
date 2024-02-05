@@ -82,11 +82,11 @@ enum Filestat compare_states(State* prior, State* latter, char* relpath)
     int find_p = find_state_file(prior, relpath);
     int find_l = find_state_file(latter, relpath);
 
-    if ( (find_p == -1 || prior->file_stat[find_p] == S_DELETED) && find_l > -1 ) {
+    if ( (find_p == -1 || prior->file_stat[find_p] == S_DELETED) && (find_l > -1 && latter->file_stat[find_l] != S_DELETED) ) {
         return S_ADDED;
-    } else if ( (find_p == -1 || prior->file_stat[find_p] == S_DELETED) && (find_l == -1 || prior->file_stat[find_p] == S_DELETED) ) {
+    } else if ( (find_p == -1 || prior->file_stat[find_p] == S_DELETED) && (find_l == -1 || prior->file_stat[find_l] == S_DELETED) ) {
         return S_UNCHANGED; // idk again
-    } else if ( find_p > -1 && (find_l == -1 || prior->file_stat[find_p] == S_DELETED) ) {
+    } else if ( (find_p > -1 && prior->file_stat[find_p] != S_DELETED) && (find_l == -1 || prior->file_stat[find_l] == S_DELETED) ) {
         return S_DELETED;
     } else {
         FILE* fp = open_state_file(prior, relpath);
@@ -112,7 +112,7 @@ enum Filestat compare_wt_with_state(int state_id, char* relpath)
     } else if ( (sfile_ind == -1 || state->file_stat[sfile_ind] == S_DELETED) && wt_file == NULL ) {
         fclose(wt_file);
         return S_UNCHANGED; // Special case, be careful
-    } else if ( sfile_ind > -1 && wt_file == NULL ) {
+    } else if ( (sfile_ind > -1 && state->file_stat[sfile_ind] != S_DELETED) && wt_file == NULL ) {
         fclose(wt_file);
         return S_DELETED;
     } else {
@@ -693,7 +693,14 @@ int merge(char* b1, char* b2)
         enum Filestat stat = compare_states(head, other, relpath);
         if (stat == S_MODIFIED) {
             printf("Conflict: %s\n", relpath);
-            // TODO: raise conflict using diff
+            FILE* file1 = open_state_file(head, relpath);
+            FILE* file2 = open_state_file(other, relpath);
+            // Creating absolute path
+            char abspath[PATH_MAX];
+            sprintf(abspath, "%s\\%s", find_root_path(), relpath);
+
+            print_differences(file1, file2, 0, 0, 0, 0, abspath, abspath);
+            fclose(file1); fclose(file2);
             found_conflict = true;
         }
     }
@@ -761,18 +768,18 @@ void print_differences(FILE* file1, FILE* file2, int start_1, int end_1, int sta
         if (strcmp(line_1, line_2) != 0 && !one_ended && !two_ended) { // we have a diff
             found_difference = true;
 
-            printf("<<<<<<<<<<\n");
-            printf("\t(\033[0;33m%s - %d\033[0m)\n", file1name, line1_num);
+            printf("\t\t<<<<<<<<<<\n");
+            printf("\t\t\t(\033[0;33m%s - %d\033[0m)\n", file1name, line1_num);
 
-            printf("\t\033[0;35m"); printf(line_1); printf("\033[0m");
+            printf("\t\t\t\033[0;35m"); printf(line_1); printf("\033[0m");
             if (line_1[strlen(line_1) - 1] != '\n') printf("\n");
 
-            printf("\t(\033[0;33m%s - %d\033[0m)\n", file2name, line2_num);
+            printf("\t\t\t(\033[0;33m%s - %d\033[0m)\n", file2name, line2_num);
 
-            printf("\t\033[0;36m"); printf(line_2); printf("\033[0m");
+            printf("\t\t\t\033[0;36m"); printf(line_2); printf("\033[0m");
             if (line_2[strlen(line_2) - 1] != '\n') printf("\n");
 
-            printf(">>>>>>>>>>\n");
+            printf("\t\t>>>>>>>>>>\n");
         }
         if (one_ended && two_ended) break;
         line1_num++; line2_num++;
@@ -780,6 +787,49 @@ void print_differences(FILE* file1, FILE* file2, int start_1, int end_1, int sta
     if (!found_difference) {
         printf("No differences were found\n");
     }
+}
+
+int commit_differences(char* strid1, char* strid2)
+{
+    int id1, id2;
+    if ( !is_hex(strid1) ) return 1;
+    sscanf(strid1, "%x", &id1);
+    if ( !is_hex(strid2) ) return 1;
+    sscanf(strid2, "%x", &id2);
+    State* prior = get_state_by_id(id1);
+    State* latter = get_state_by_id(id2);
+    if (prior == NULL || latter == NULL) return 1;
+
+    printf("\nCommit \033[0;36m%s\033[0m compared to \033[0;36m%s\033[0m:\n", strid2, strid1);
+    bool found_diff = false;
+    for (int i = 0; i < prior->n_files; i++) {
+        char* relpath = prior->tracked_files[i];
+        enum Filestat stat = compare_states(prior, latter, relpath);
+        if (stat == S_DELETED) {
+            found_diff = true;
+            printf("\t\t\033[0;31m- %s\033[0m\n", relpath);
+        }
+    }
+    printf("\n");
+    for (int i = 0; i < latter->n_files; i++) {
+        char* relpath = latter->tracked_files[i];
+        enum Filestat stat = compare_states(prior, latter, relpath);
+        if (stat == S_ADDED) {
+            found_diff = true;
+            printf("\t\t\033[0;32m+ %s\033[0m\n", relpath);
+        } else if (stat == S_MODIFIED) {
+            found_diff = true;
+            printf("\t\t\033[0;36mModified: %s\033[0m\n", relpath);
+            FILE* f_prior = open_state_file(prior, relpath);
+            FILE* f_latter = open_state_file(latter, relpath);
+            print_differences(f_prior, f_latter, 0, 0, 0, 0, relpath, relpath);
+            fclose(f_prior); fclose(f_latter);
+        }
+    }
+    if (!found_diff) {
+        printf("No differences found\n");
+    }
+    return 0;
 }
 
 #endif // CHANGES_H
