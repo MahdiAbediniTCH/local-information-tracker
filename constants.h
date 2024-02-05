@@ -59,6 +59,7 @@ MERGE_CANCELLED[] = "Merge cancelled.\n",
 REVERT_INVALID_ID[] = "Could not revert to the specified commit identifier\n",
 CONFLICT_FOUND[] = "Conflict: Merge cancelled\n",
 BRANCH_NOT_FOUND[] = "Could not locate the specified branch(es)\n",
+INVALID_LINE_NUMBERS[] = "Invalid line numbers\n",
 
 SHORTCUT_NOT_FOUND[] = "\033[0;31mCouldn't locate shortcut key \"%s\"\033[0m\n",
 SHORTCUT_ALREADY_EXISTS[] = "\033[0;31mShortcut key \"%s\" already exists\033[0m\n",

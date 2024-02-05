@@ -609,7 +609,6 @@ int exec_diff(int argc, char* argv[])
         printerr(INVALID_USAGE);
         return 1;
     }
-    State* commit = NULL;
     int arg_ind = 2;
     if (argv[arg_ind][0] == '-') {
         if ( strcmp(argv[arg_ind] + 1, "f") == 0 ) {
@@ -655,23 +654,11 @@ int exec_diff(int argc, char* argv[])
                 printerr(FILES_NOT_FOUND);
                 return 1;
             }
-            
-            print_differences(file1, file2, s1, e1, s2, e2);
+
+            print_differences(file1, file2, s1, e1, s2, e2, file1_name, file2_name);
+            fclose(file1); fclose(file2);
 
         } else if ( strcmp(argv[arg_ind] + 1, "c") == 0 ) {
-            if (argc < 4) {
-                printerr(EXPECTED_SHORTCUT);
-                return 1;
-            } if (argc != 4) {
-                printerr(INVALID_USAGE);
-                return 1;
-            }
-            char message[COMMIT_MESSAGE_MAX + 1];
-            if ( !get_message_from_shortcut(message, argv[3]) ) {
-                printf(SHORTCUT_NOT_FOUND, argv[3]);
-                return 1;
-            }
-            commit = do_a_commit(message);
 
         } else {
             printerr(INVALID_OPTION);

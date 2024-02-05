@@ -724,9 +724,62 @@ int merge(char* b1, char* b2)
     return 0;
 }
 
-void print_differences(FILE* file1, FILE* file2, int start_1, int end_1, int start_2, int end_2)
+void print_differences(FILE* file1, FILE* file2, int start_1, int end_1, int start_2, int end_2, char* file1name, char* file2name)
 {
-    
+    char line_1[MAX_LINE_LENGTH];
+    char line_2[MAX_LINE_LENGTH];
+    int line1_num = 1, line2_num = 1;
+    if (start_1 != 0 && end_1 != 0 && start_2 != 0 && end_2 != 0) {
+        // Seek to the beginning
+        for (int i = 0; i < start_1 - 1; i++) {
+            fgets(line_1, MAX_LINE_LENGTH, file1);
+        }
+        for (int i = 0; i < start_2 - 1; i++) {
+            fgets(line_2, MAX_LINE_LENGTH, file2);
+        }
+        line1_num = start_1; line2_num = start_2;
+    } else {
+        end_1 = 100000;
+        end_2 = 100000;
+    }
+    bool one_ended = false, two_ended = false;
+    bool found_difference = false;
+    char* tmp;
+    for (;;) {
+        tmp = fgets(line_1, MAX_LINE_LENGTH, file1);
+        if (tmp == NULL || line1_num > end_1) one_ended = true;
+        tmp = fgets(line_2, MAX_LINE_LENGTH, file2);
+        if (tmp == NULL || line2_num > end_2) two_ended = true;
+        while (strspn(line_1, "\n\r\t ") == strlen(line_1)) {// empty line
+            line1_num++;
+            if (fgets(line_1, MAX_LINE_LENGTH, file1) == NULL || line1_num > end_1) {one_ended = true; break;}
+        }
+        while (strspn(line_2, "\n\r\t ") == strlen(line_2)) {// empty line
+            line2_num++;
+            if (fgets(line_2, MAX_LINE_LENGTH, file2) == NULL || line2_num > end_2) {two_ended = true; break;}
+        }
+        if (strcmp(line_1, line_2) != 0 && !one_ended && !two_ended) { // we have a diff
+            found_difference = true;
+
+            printf("<<<<<<<<<<\n");
+            printf("\t(\033[0;33m%s - %d\033[0m)\n", file1name, line1_num);
+
+            printf("\t\033[0;35m"); printf(line_1); printf("\033[0m");
+            if (line_1[strlen(line_1) - 1] != '\n') printf("\n");
+
+            printf("\t(\033[0;33m%s - %d\033[0m)\n", file2name, line2_num);
+
+            printf("\t\033[0;36m"); printf(line_2); printf("\033[0m");
+            if (line_2[strlen(line_2) - 1] != '\n') printf("\n");
+
+            printf(">>>>>>>>>>\n");
+        }
+        if (one_ended && two_ended) break;
+        line1_num++; line2_num++;
+    }
+    if (!found_difference) {
+        printf("No differences were found\n");
+    }
 }
 
 #endif // CHANGES_H
