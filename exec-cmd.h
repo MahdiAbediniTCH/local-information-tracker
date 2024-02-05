@@ -600,6 +600,90 @@ int exec_revert(int argc, char* argv[])
     }
 }
 
+int exec_diff(int argc, char* argv[]) 
+{
+    if ( !is_in_repo() ) {
+        printerr(NOT_REPO);
+        return 1;
+    } if (argc < 3) {
+        printerr(INVALID_USAGE);
+        return 1;
+    }
+    State* commit = NULL;
+    int arg_ind = 2;
+    if (argv[arg_ind][0] == '-') {
+        if ( strcmp(argv[arg_ind] + 1, "f") == 0 ) {
+            if (argc < 5) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            char* file1_name = argv[3];
+            char* file2_name = argv[4];
+            int s1 = 0, e1 = 0;
+            int s2 = 0, e2 = 0;
+            if (argc > 5) {
+                int arg_ind = 5;
+                for (int i = 0; i < 2; i++) {
+                    if (argv[arg_ind][0] == '-') {
+                        if ( strcmp(argv[arg_ind] + 1, "line1") == 0 ) {
+                            arg_ind++;
+                            if ( sscanf(argv[arg_ind], "%d-%d", &s1, &e1) != 2 || s1 < 0 || e1 < 0) {
+                                printerr(INVALID_LINE_NUMBERS);
+                                return 1;
+                            }
+
+                        } else if ( strcmp(argv[arg_ind] + 1, "line2") == 0 ) {
+                            arg_ind++;
+                            if ( sscanf(argv[arg_ind], "%d-%d", &s2, &e2) != 2 || s2 < 0 || e2 < 0) {
+                                printerr(INVALID_LINE_NUMBERS);
+                                return 1;
+                            }
+                        } else {
+                            printerr(INVALID_OPTION);
+                            return 1;
+                        }
+                    } else {
+                        printerr(INVALID_USAGE);
+                        return 1;
+                    }
+                    arg_ind++;
+                }
+            }
+            FILE* file1 = fopen(file1_name, "r");
+            FILE* file2 = fopen(file2_name, "r");
+            if (file1 == NULL || file2 == NULL) {
+                printerr(FILES_NOT_FOUND);
+                return 1;
+            }
+            
+            print_differences(file1, file2, s1, e1, s2, e2);
+
+        } else if ( strcmp(argv[arg_ind] + 1, "c") == 0 ) {
+            if (argc < 4) {
+                printerr(EXPECTED_SHORTCUT);
+                return 1;
+            } if (argc != 4) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            char message[COMMIT_MESSAGE_MAX + 1];
+            if ( !get_message_from_shortcut(message, argv[3]) ) {
+                printf(SHORTCUT_NOT_FOUND, argv[3]);
+                return 1;
+            }
+            commit = do_a_commit(message);
+
+        } else {
+            printerr(INVALID_OPTION);
+            return 1;
+        }
+    } else {
+        printerr(OPTION_REQUIRED);
+        return 1;
+    }
+    return 0;
+}
+
 int exec_merge(int argc, char* argv[])
 {
     if (argc < 3) {

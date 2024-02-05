@@ -19,6 +19,7 @@ exec_branch,
 exec_checkout,
 exec_revert,
 exec_merge,
+exec_diff,
 }; // Array of function pointers, indexes are respective to the indexes of strings in COMMANDS
 
 // Main command handler function

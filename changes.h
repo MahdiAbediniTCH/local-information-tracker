@@ -724,4 +724,9 @@ int merge(char* b1, char* b2)
     return 0;
 }
 
+void print_differences(FILE* file1, FILE* file2, int start_1, int end_1, int start_2, int end_2)
+{
+    
+}
+
 #endif // CHANGES_H

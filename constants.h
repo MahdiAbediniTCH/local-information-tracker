@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H // Include guarding
 #define CONSTANTS_H
 // Allowed commands
-#define N_COMMANDS 14 // Number of allowed commands
+#define N_COMMANDS 15 // Number of allowed commands
 #define COMMAND_MAX 100 // Maximum length of a command
 const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "config", 
@@ -18,6 +18,7 @@ const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "checkout",
 "revert",
 "merge",
+"diff",
 };
 // User info
 #define USERNAME_MAX 30
@@ -65,6 +66,7 @@ SHORTCUT_ALREADY_EXISTS[] = "\033[0;31mShortcut key \"%s\" already exists\033[0m
 // messages
 REPO_INIT_MESSAGE[] = "Initialized empty Lit repository in %s\n",
 FILEN_NOT_FOUND[] = "Could not locate file %s\n",
+FILES_NOT_FOUND[] = "Could not locate file(s)\n",
 STAGE_SUCCESS[] = "File(s) staged successfully\n",
 FILE_IS_STAGED_COLOR[] = "\033[0;32mStaged\033[0m\n",
 FILE_ISNT_STAGED_COLOR[] = "\033[0;33mNot staged\033[0m\n",
