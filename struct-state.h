@@ -22,6 +22,7 @@ enum Filestat{
 typedef struct State {
     int state_id; // Commit id is incremented with each commit, starts with 0xa0
     int parent_id;
+    int second_parent_id;
     time_t time_created;
     char message[COMMIT_MESSAGE_MAX + 1];
     char branch_name[BRANCH_NAME_MAX];
@@ -45,6 +46,7 @@ State* initialize_state(int id, int parent_id, char* message, char* branch, char
     State* state = (State*) malloc(sizeof(State));
     state->state_id = id;
     state->parent_id = parent_id;
+    state->second_parent_id = 0;
     state->time_created = time(NULL);
     strcpy(state->message, message);
     strcpy(state->branch_name, branch);
@@ -79,6 +81,10 @@ State* read_state(char* path)
     }
     // Parent ID
     if (fscanf(meta, "%x\n", &(state->parent_id)) == EOF) {
+        chdir(original_path);
+        return NULL;
+    }
+    if (fscanf(meta, "%x\n", &(state->second_parent_id)) == EOF) {
         chdir(original_path);
         return NULL;
     }
@@ -141,7 +147,7 @@ int write_state(State* state, char* path)
     mkdir("root");
     // Writing meta data
     FILE* meta = fopen("meta.txt", "w");
-    fprintf(meta, "%x\n%x\n%s\n%s\n%s\n~%s~\n", state->state_id, state->parent_id, state->branch_name, state->author_name, state->author_email, state->message); // Important order
+    fprintf(meta, "%x\n%x\n%x\n%s\n%s\n%s\n~%s~\n", state->state_id, state->parent_id, state->second_parent_id, state->branch_name, state->author_name, state->author_email, state->message); // Important order
     fclose(meta);
     // Writing file info
     FILE* files = fopen("files.txt", "w");
@@ -318,6 +324,7 @@ State* inherit_state(State* parent, int id)
     State* state = (State*) malloc(sizeof(State));
     state->state_id = id;
     state->parent_id = parent->state_id;
+    state->second_parent_id = 0;
     get_author_name(state->author_name);
     get_author_email(state->author_email);
     strcpy(state->branch_name, parent->branch_name);

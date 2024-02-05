@@ -76,10 +76,8 @@ int get_head_id()
     return id;
 }
 
-enum Filestat calculate_new_state(int prior_id, int latter_id, char* relpath)
+enum Filestat compare_states(State* prior, State* latter, char* relpath)
 {
-    State* prior = get_state_by_id(prior_id);
-    State* latter = get_state_by_id(latter_id);
     if (prior == NULL || latter == NULL) return 30; // idk
     int find_p = find_state_file(prior, relpath);
     int find_l = find_state_file(latter, relpath);
@@ -87,7 +85,7 @@ enum Filestat calculate_new_state(int prior_id, int latter_id, char* relpath)
     if ( (find_p == -1 || prior->file_stat[find_p] == S_DELETED) && find_l > -1 ) {
         return S_ADDED;
     } else if ( (find_p == -1 || prior->file_stat[find_p] == S_DELETED) && (find_l == -1 || prior->file_stat[find_p] == S_DELETED) ) {
-        return 31; // idk again
+        return S_UNCHANGED; // idk again
     } else if ( find_p > -1 && (find_l == -1 || prior->file_stat[find_p] == S_DELETED) ) {
         return S_DELETED;
     } else {
@@ -619,6 +617,10 @@ State* revert_no_commit(char* str_id)
         id = get_head_id();
         for (int i = 0; i < n_back; i++) {
             State* commit = get_state_by_id(id);
+            if (commit->second_parent_id != 0) { // Means we had a merge
+                free(commit);
+                return NULL;
+            }
             id = commit->parent_id;
             free(commit);
         }
@@ -629,8 +631,23 @@ State* revert_no_commit(char* str_id)
         sscanf(str_id, "%x", &id);
     }
     // TODO: checking if there was a merge in the middle
-    State* commit = get_state_by_id(id);
-    if (commit == NULL) return NULL;
+    State* commit = NULL;
+    int p_id = get_head_id();
+    bool found_commit_id = false;
+    while (id >= 0xa0) {
+        commit = get_state_by_id(p_id);
+        if (p_id == id) {
+            found_commit_id = true;
+            break;
+        }
+        if (commit->second_parent_id != 0) { // Means we had a merge
+            free(commit);
+            return NULL;
+        }
+        p_id = commit->parent_id;
+        free(commit);
+    }
+    if (!found_commit_id) return NULL;
     change_wt_files_to_commit(commit);
     return commit;
 }
@@ -656,8 +673,54 @@ int revert(char* str_id, char* message)
     //
     chdir(original_path);
 
-    // TODO: if the stage is the same, it won't make a new commit bruh
+    // TODO: if the stage is the same, it won't make a new commit 
     if (do_a_commit(message) == NULL) return 2;
+    return 0;
+}
+// 0: success | 1: branch not found | 2: conflict 
+int merge(char* b1, char* b2)
+{
+    char currbranch[BRANCH_NAME_MAX]; get_current_branch_name(currbranch);
+    int id1 = get_branch_commit_id(b1);
+    int id2 = get_branch_commit_id(b2);
+    if (id1 == -1 || id2 == -1) return 1;
+    State* head = get_state_by_id(id1);
+    State* other = get_state_by_id(id2);
+    // Checking for conflicts
+    bool found_conflict = false;
+    for (int i = 0; i < other->n_files; i++) {
+        char* relpath = other->tracked_files[i];
+        enum Filestat stat = compare_states(head, other, relpath);
+        if (stat == S_MODIFIED) {
+            printf("Conflict: %s\n", relpath);
+            // TODO: raise conflict using diff
+            found_conflict = true;
+        }
+    }
+    if (found_conflict) return 2;
+    // Moving to branch1
+    if (checkout(b1) != 1) return 1;
+    // Comparing and merging files
+    State* stage = get_stage_object();
+    char* root = find_root_path();
+    char abs_path[PATH_MAX];
+    for (int i = 0; i < other->n_files; i++) {
+        char* relpath = other->tracked_files[i];
+        enum Filestat stat = compare_states(head, other, relpath);
+        if (stat == S_ADDED) {
+            copy_only_file_to_wt(other, relpath);
+            sprintf(abs_path, "%s\\%s", root, relpath);
+            stage_file(abs_path, stage);
+        } 
+    }
+    write_state(stage, stage->data_dir);
+
+    char message[COMMIT_MESSAGE_MAX + 1];
+    sprintf(message, "Merged branches \"%s\" and \"%s\".", b1, b2);
+
+    State* merge_commit = do_a_commit(message);
+    merge_commit->second_parent_id = id2;
+    write_state(merge_commit, merge_commit->data_dir);
     return 0;
 }
 

@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H // Include guarding
 #define CONSTANTS_H
 // Allowed commands
-#define N_COMMANDS 13 // Number of allowed commands
+#define N_COMMANDS 14 // Number of allowed commands
 #define COMMAND_MAX 100 // Maximum length of a command
 const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "config", 
@@ -17,6 +17,7 @@ const char* COMMANDS[N_COMMANDS] = { // Array of command strings
 "branch",
 "checkout",
 "revert",
+"merge",
 };
 // User info
 #define USERNAME_MAX 30
@@ -51,8 +52,12 @@ CHECKOUT_FAILURE[] = "Could not locate identifier\n",
 CHECKOUT_UNCHANGED_ERR[] = "There are uncommitted changes in working tree\n",
 COMMIT_HEAD_DETACHED[] = "Cannot commit in detached HEAD mode\n",
 BRANCH_HEAD_DETACHED[] = "Cannot create a new branch in detached HEAD mode\n",
+REVERT_HEAD_DETACHED[] = "Cannot create revert in detached HEAD mode\n",
 CHECKOUT_CANCELLED[] = "Checkout cancelled.\n",
-INVALID_COMMIT_ID[] = "Could not revert to the specified commit identifier\n",
+MERGE_CANCELLED[] = "Merge cancelled.\n",
+REVERT_INVALID_ID[] = "Could not revert to the specified commit identifier\n",
+CONFLICT_FOUND[] = "Conflict: Merge cancelled\n",
+BRANCH_NOT_FOUND[] = "Could not locate the specified branch(es)\n",
 
 SHORTCUT_NOT_FOUND[] = "\033[0;31mCouldn't locate shortcut key \"%s\"\033[0m\n",
 SHORTCUT_ALREADY_EXISTS[] = "\033[0;31mShortcut key \"%s\" already exists\033[0m\n",
@@ -84,6 +89,7 @@ CHECKOUT_HEAD_WARNING[] = "\033[0;33mThis action will erase all changes in the w
 REVERT_SUCCESS[] = "Successfully reverted to %s\n",
 REVERT_SUCCESS_N[] = "Successfully reverted working tree to %s (No commit)\n",
 REVERT_IS_SAME[] = "Destination data is the same as HEAD. Nothing committed.\n",
+MERGE_SUCCESS[] = "Merged two branches \033[1;32m%s\033[0m and \033[1;32m%s\033[0m\n",
 
 LOG_FORMAT[] = "Commit \033[0;36m%x\033[0m \nBranch: \033[1;32m%s\033[0m \nAuthor: %s <%s> \nDate: \033[0;34m%s\033[0mNumber of changes: %d \nMessage: \033[0;33m%s\033[0m\n\n",
 HEAD_MARKING[] = "Commit \033[0;36m%x\033[0m [\033[3;1;36mHEAD\033[0m]\nBranch: \033[1;32m%s\033[0m \nAuthor: %s <%s> \nDate: \033[0;34m%s\033[0mNumber of changes: %d \nMessage: \033[0;33m%s\033[0m\n\n"

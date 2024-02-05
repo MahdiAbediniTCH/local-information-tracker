@@ -344,7 +344,6 @@ int exec_remove(int argc, char *argv[])
         printerr(INVALID_USAGE);
         return 1;
     } 
-    State* commit = NULL;
     int arg_ind = 2;
     if (argv[arg_ind][0] == '-') {
         if ( strcmp(argv[arg_ind] + 1, "s") == 0 ) {
@@ -538,8 +537,13 @@ int exec_revert(int argc, char* argv[])
         printerr(NOT_REPO);
         return 1;
     }
+
     if (argc < 3) {
         printerr(FEW_ARGUMENTS);
+        return 1;
+    }
+    if ( detached_head(0) ) {
+        printerr(REVERT_HEAD_DETACHED);
         return 1;
     }
     int arg_ind = 2;
@@ -553,9 +557,21 @@ int exec_revert(int argc, char* argv[])
             arg_ind++;
             strcpy(message, argv[arg_ind]);
         } else if ( strcmp(argv[arg_ind] + 1, "n") == 0 ) {
-            arg_ind++;
-            if ( revert_no_commit(argv[arg_ind]) == NULL ) {
-                printerr(INVALID_COMMIT_ID);
+            if (argc > 4) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+            State* result = NULL;
+            if (argc == 3) {
+                char id_str[50];
+                sprintf(id_str, "%x", get_head_id());
+                result = revert_no_commit(id_str);
+            } else {
+                arg_ind++;
+                result = revert_no_commit(argv[arg_ind]);
+            }
+            if ( result == NULL ) {
+                printerr(REVERT_INVALID_ID);
                 return 1;
             } else {
                 printf(REVERT_SUCCESS_N, argv[arg_ind]);
@@ -573,7 +589,7 @@ int exec_revert(int argc, char* argv[])
     }
     int result = revert(argv[arg_ind], message);
     if ( result == 1 ) {
-        printerr(INVALID_COMMIT_ID);
+        printerr(REVERT_INVALID_ID);
         return 1;
     } else if ( result == 0 ) {
         printf(REVERT_SUCCESS, argv[arg_ind]);
@@ -581,6 +597,59 @@ int exec_revert(int argc, char* argv[])
     } else if ( result == 2 ) {
         printf(REVERT_IS_SAME);
         return 0;
+    }
+}
+
+int exec_merge(int argc, char* argv[])
+{
+    if (argc < 3) {
+        printerr(INVALID_USAGE);
+        return 1;
+    } 
+    int arg_ind = 2;
+    if (argv[arg_ind][0] == '-') {
+        if ( strcmp(argv[arg_ind] + 1, "b") == 0 ) {
+            if (argc != 5) {
+                printerr(INVALID_USAGE);
+                return 1;
+            }
+        } else {
+            printerr(INVALID_OPTION);
+            return 1;
+        }
+    } else {
+        printerr(OPTION_REQUIRED);
+        return 1;
+    }
+    if ( !is_wt_unchanged() ) {
+        char input[20];
+        printf(CHECKOUT_HEAD_WARNING);
+        scanf("%s", input);
+        if (input[0] == 'Y' || input[0] == 'y') {
+            ;
+        } else {
+            printerr(MERGE_CANCELLED);
+            return 1;
+        }
+    }
+    // DOING THE MERGE
+    int result = merge(argv[3], argv[4]);
+    switch (result)
+    {
+    case 0:
+        printf(MERGE_SUCCESS, argv[3], argv[4]);
+        return 0;
+        break;
+    case 1:
+        printerr(BRANCH_NOT_FOUND);
+        return 1;
+        break;
+    case 2:
+        printerr(CONFLICT_FOUND);
+        return 1;
+        break;
+    default:
+        break;
     }
 }
 #endif
