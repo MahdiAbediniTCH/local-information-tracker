@@ -7,6 +7,7 @@
 #include "action-history.h"
 #include "msg-shortcuts.h"
 #include "log.h"
+#include "tags.h"
 
 int exec_config(int argc, char *argv[])
 {
@@ -606,7 +607,7 @@ int exec_diff(int argc, char* argv[])
         printerr(NOT_REPO);
         return 1;
     } if (argc < 3) {
-        printerr(INVALID_USAGE);
+        printerr(FEW_ARGUMENTS);
         return 1;
     }
     int arg_ind = 2;
@@ -682,8 +683,11 @@ int exec_diff(int argc, char* argv[])
 
 int exec_merge(int argc, char* argv[])
 {
-    if (argc < 3) {
-        printerr(INVALID_USAGE);
+    if ( !is_in_repo() ) {
+        printerr(NOT_REPO);
+        return 1;
+    } if (argc < 3) {
+        printerr(FEW_ARGUMENTS);
         return 1;
     } 
     int arg_ind = 2;
@@ -731,5 +735,84 @@ int exec_merge(int argc, char* argv[])
     default:
         break;
     }
+}
+
+int exec_tag(int argc, char* argv[])
+{
+    if ( !is_in_repo() ) {
+        printerr(NOT_REPO);
+        return 1;
+    } if (argc == 2) {
+        print_all_tags();
+        return 0;
+    } if (argc < 4) {
+        printerr(FEW_ARGUMENTS);
+        return 1;
+    } if ( strcmp(argv[2], "-a") != 0 ) {
+        if ( strcmp(argv[2], "show") == 0 && argc == 4 ) {
+            if ( !show_tag(argv[3]) ) {
+                printerr(TAG_NOT_FOUND);
+                return 1;
+            }
+            return 0;
+        } else {
+            printerr(INVALID_USAGE);
+            return 1;
+        }
+    } 
+    char* tagname = argv[3];
+    char message[COMMIT_MESSAGE_MAX] = "";
+    int arg_ind = 4;
+    int commit_id = get_head_id();
+    bool overwrite = false;
+
+    while (arg_ind < argc) {
+        if (argv[arg_ind][0] == '-') {
+            if ( strcmp(argv[arg_ind] + 1, "m") == 0 ) {
+                arg_ind++;
+                if (arg_ind >= argc) {
+                    printerr(INVALID_USAGE);
+                    return 1;
+                }
+                strcpy(message, argv[arg_ind]);
+                if (strlen(message) > COMMIT_MESSAGE_MAX) {
+                    printerr(MSG_TOO_LONG);
+                    return 1;
+                }
+            } else if ( strcmp(argv[arg_ind] + 1, "c") == 0 ) {
+                arg_ind++;
+                if (arg_ind >= argc) {
+                    printerr(INVALID_USAGE);
+                    return 1;
+                }
+                if (!is_hex(argv[arg_ind])) {
+                    printerr(INVALID_COMMIT_IDS);
+                    return 1;
+                }
+                sscanf(argv[arg_ind], "%x", &commit_id);
+
+            } else if ( strcmp(argv[arg_ind] + 1, "f") == 0 ) {
+                overwrite = true;
+            } else {
+                printerr(INVALID_OPTION);
+                return 1;
+            }
+        } else {
+            printerr(OPTION_REQUIRED);
+            return 1;
+        }
+        arg_ind++;
+    }
+    if (argc > arg_ind) {
+        printerr(INVALID_USAGE);
+        return 1;
+    }
+    if ( !add_tag(tagname, message, commit_id, overwrite) ) {
+        printerr(TAG_EXISTS);
+        return 1;
+    }
+    if (overwrite) printf(TAG_SUCCESS_OW, tagname);
+    else printf(TAG_SUCCESS, tagname);
+    return 0;
 }
 #endif

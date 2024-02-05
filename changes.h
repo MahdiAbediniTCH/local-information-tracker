@@ -10,6 +10,8 @@
 #include "data.h"
 
 int change_branch_id(char*, int);
+void print_differences(FILE*, FILE*, int, int, int, int, char*, char*);
+
 
 int create_root_commit()
 {

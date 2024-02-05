@@ -258,6 +258,8 @@ int initialize_repo()
     // fprintf(f_user, "Default\ndefault@user.info\n");
     fclose(f_user);
     chdir("..");
+    // Tags
+    mkdir("tags");
     // States
     mkdir("states"); chdir("states");
     mkdir("stage");
