@@ -890,7 +890,7 @@ int exec_grep(int argc, char* argv[])
             printerr(INVALID_COMMIT_IDS);
             return 1;
         }
-        file = open_state_file(get_state_by_id(commit_id), filename);
+        file = open_state_file(get_state_by_id(commit_id), file_relative_to_root(filename, find_root_path()));
     }
     if (file == NULL) {
         printerr(FILES_NOT_FOUND);
